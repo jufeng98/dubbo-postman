@@ -39,7 +39,7 @@ import java.io.IOException;
  * cas拦截点配置
  * 因为是前后端分离,在前端检测登陆是否失效,需要在每次进行ajax请求的时候带上ajax-header,
  * 在session过期的时候,会执行这个类的commence方法{@link AuthenticationEntryPoint}
- *  Used by {@link ExceptionTranslationFilter} to commence an authentication scheme.
+ * Used by {@link ExceptionTranslationFilter} to commence an authentication scheme.
  */
 public class SessionExpireEntryPoint implements AuthenticationEntryPoint {
 
@@ -49,13 +49,14 @@ public class SessionExpireEntryPoint implements AuthenticationEntryPoint {
 
     final CasAuthenticationEntryPoint casAuthenticationEntryPoint;
 
-    SessionExpireEntryPoint(final CasAuthenticationEntryPoint casAuthenticationEntryPoint){
+    SessionExpireEntryPoint(final CasAuthenticationEntryPoint casAuthenticationEntryPoint) {
 
         this.casAuthenticationEntryPoint = casAuthenticationEntryPoint;
     }
 
     /**
      * 在cas授权失败的时候会进入这个方法
+     *
      * @param request
      * @param response
      * @param authException
@@ -66,20 +67,20 @@ public class SessionExpireEntryPoint implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
 
         //判断请求类型是否是ajax
-        if(request.getHeader(AJAX_TYPE) != null || request.getParameter(AJAX_TYPE)!=null){
+        if (request.getHeader(AJAX_TYPE) != null || request.getParameter(AJAX_TYPE) != null) {
 
             //设置过期标识,让前端js进行处理
-            response.setHeader(AJAX_HEADER,"time-out");
+            response.setHeader(AJAX_HEADER, "time-out");
 
             try {
                 //直接返回错误信息,前端js进行拦截
-                response.sendError(HttpServletResponse.SC_OK,"session已经过期");
+                response.sendError(HttpServletResponse.SC_OK, "session已经过期");
 
             } catch (IOException e) {
             }
-        }else{
+        } else {
 
-            casAuthenticationEntryPoint.commence(request,response,authException);
+            casAuthenticationEntryPoint.commence(request, response, authException);
         }
     }
 }

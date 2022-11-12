@@ -75,10 +75,11 @@ import App from './App'
 import router from './router'
 import store from './store'
 import '@/icons'
+import consts from "./consts";
 
 //如果是本地调试就使用,在build的时候正注释掉这行
 //import './mock'
-
+Vue.prototype.$consts = consts;
 Vue.prototype.$NProgress = NProgress;
 Vue.component('collapse-transition', CollapseTransition)
 Vue.use( VueClipboard )
@@ -86,6 +87,7 @@ Vue.use(ElementUI, { locale })
 Vue.use(VueCodemirror)
 
 Vue.config.productionTip = false
+Vue.prototype.$ELEMENT = { size: 'mini' }
 
 NProgress.configure({
         showSpinner: false

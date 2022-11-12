@@ -24,8 +24,8 @@
 
 package com.rpcpostman.security;
 
-import com.rpcpostman.security.user.UserService;
 import com.rpcpostman.security.entity.User;
+import com.rpcpostman.security.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
@@ -34,33 +34,32 @@ import org.springframework.stereotype.Component;
 /**
  * @author everythingbest
  * cas authentication UserDetailsService
- *
  */
 @Component
 public class UserDetailsService implements
         org.springframework.security.core.userdetails.UserDetailsService {
-    
-   @Autowired
-   UserService userService;
-    
+
+    @Autowired
+    UserService userService;
+
     @Override
     public org.springframework.security.core.userdetails.UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        
+
         String userCode = email;
-    
+
         User user = null;
-        
+
         try {
-            
+
             user = userService.findOrAdd(userCode);
-    
+
             if (user == null) {
-        
+
                 throw new UsernameNotFoundException(email);
             }
-            
-        }catch (Exception exp){
-    
+
+        } catch (Exception exp) {
+
             throw new UsernameNotFoundException(email);
         }
 

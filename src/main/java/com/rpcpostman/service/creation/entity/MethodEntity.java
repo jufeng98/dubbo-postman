@@ -43,9 +43,9 @@ public class MethodEntity {
      * eg:test(int,Object)
      */
     String name;
-    
+
     @JsonIgnore
     Method method;
-    
+
     List<ParamEntity> params = new ArrayList<>();
 }

@@ -25,38 +25,32 @@
 package com.rpcpostman.util;
 
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
 /**
  * @author everythingbest
- *
  */
+@Slf4j
 public class LogResultPrintStream extends PrintStream {
+    private final ByteArrayOutputStream byteArrayOutputStream;
 
-	private boolean success = false;
+    private final PrintStream out = System.out;
 
-	private final ByteArrayOutputStream byteArrayOutputStream;
+    @Override
+    public void println(String x) {
+        out.println(x);
+        super.println(x);
+    }
 
-	public LogResultPrintStream(ByteArrayOutputStream byteArrayOutputStream) {
+    public LogResultPrintStream(ByteArrayOutputStream byteArrayOutputStream) {
+        super(byteArrayOutputStream);
+        this.byteArrayOutputStream = byteArrayOutputStream;
+    }
 
-		super(byteArrayOutputStream);
-
-		this.byteArrayOutputStream = byteArrayOutputStream;
-	}
-
-	public boolean isSuccess() {
-
-		return success;
-	}
-
-	public void setSuccess(boolean success) {
-
-		this.success = success;
-	}
-
-	public byte[] getLogByteArray() {
-
-		return byteArrayOutputStream.toByteArray();
-	}
+    public byte[] getLogByteArray() {
+        return byteArrayOutputStream.toByteArray();
+    }
 }

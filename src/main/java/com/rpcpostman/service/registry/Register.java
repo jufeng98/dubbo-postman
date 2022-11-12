@@ -26,6 +26,8 @@ package com.rpcpostman.service.registry;
 
 import com.rpcpostman.service.registry.entity.InterfaceMetaInfo;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -35,5 +37,9 @@ public interface Register {
 
     void pullData();
 
-    Map<String,Map<String, InterfaceMetaInfo>> getAllService();
+    Map<String, Map<String, InterfaceMetaInfo>> getAllService();
+
+    default List<String> getServiceInstances(String serviceName) {
+        return Collections.emptyList();
+    }
 }

@@ -24,9 +24,9 @@
 
 package com.rpcpostman.config;
 
-import com.rpcpostman.service.repository.redis.RedisRepository;
 import com.rpcpostman.service.maven.Maven;
 import com.rpcpostman.service.repository.redis.RedisKeys;
+import com.rpcpostman.service.repository.redis.RedisRepository;
 import com.rpcpostman.util.Constant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,19 +40,18 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AppConfig {
 
-    @Value("${nexus.url}")
-    private String nexusPath;
-
     @Value("${dubbo.api.jar.dir}")
     String apiJarPath;
-
+    @Value("${nexus.url}")
+    private String nexusPath;
+    @Value("${nexus.url.releases}")
+    private String nexusPathReleases;
     @Autowired
     private RedisRepository redisRepository;
 
     @Bean
-    Maven mavenProcessor(){
-
-        return new Maven(nexusPath,apiJarPath);
+    Maven mavenProcessor() {
+        return new Maven(nexusPath, nexusPathReleases, apiJarPath);
     }
 
     @Bean

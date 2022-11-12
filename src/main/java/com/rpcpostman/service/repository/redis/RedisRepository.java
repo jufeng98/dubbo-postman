@@ -39,46 +39,43 @@ import java.util.Set;
 public class RedisRepository implements com.rpcpostman.service.repository.Repository {
 
     @Autowired
-    private RedisTemplate redisTemplate;
+    private RedisTemplate<Object, Object> redisTemplate;
 
-    public Object get(String key){
+    public Object get(String key) {
         return redisTemplate.opsForValue().get(key);
     }
 
-    public void setAdd(String key,Object value){
-        redisTemplate.opsForSet().add(key,value);
+    public void setAdd(String key, Object value) {
+        redisTemplate.opsForSet().add(key, value);
     }
 
-    public Set<Object> members(String key){
-        Set<Object> sets = redisTemplate.opsForSet().members(key);
-        return sets;
+    public Set<Object> members(String key) {
+        return redisTemplate.opsForSet().members(key);
     }
 
-    public long setRemove(String key,Object value){
-        long count = redisTemplate.opsForSet().remove(key,value);
-        return count;
+    public Long setRemove(String key, Object value) {
+        return redisTemplate.opsForSet().remove(key, value);
     }
 
 
-    public void mapPut(String key,Object hashKey,Object value){
-        redisTemplate.opsForHash().put(key,hashKey,value);
+    public void mapPut(String key, Object hashKey, Object value) {
+        redisTemplate.opsForHash().put(key, hashKey, value);
         redisTemplate.persist(key);
     }
 
-    public Object mapGet(String key,Object hashKey){
-        return redisTemplate.opsForHash().get(key,hashKey);
+    public <T> T mapGet(String key, Object hashKey) {
+        return (T) redisTemplate.opsForHash().get(key, hashKey);
     }
 
-    public Set<Object> mapGetKeys(String key){
+    public Set<Object> mapGetKeys(String key) {
         return redisTemplate.opsForHash().keys(key);
     }
 
-    public List<Object> mapGetValues(String key){
-        List<Object> lists = redisTemplate.opsForHash().values(key);
-        return lists;
+    public List<Object> mapGetValues(String key) {
+        return redisTemplate.opsForHash().values(key);
     }
 
-    public void removeMap(String key,String hashKey){
-        redisTemplate.opsForHash().delete(key,hashKey);
+    public void removeMap(String key, String hashKey) {
+        redisTemplate.opsForHash().delete(key, hashKey);
     }
 }

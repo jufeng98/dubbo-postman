@@ -93,7 +93,7 @@ export default {
   methods: {
       clearPageCache(){
           window.localStorage.clear();
-          window.location.reload();
+          window.location.reload(true);
       },
       getSysEnv(){
           let param = {};

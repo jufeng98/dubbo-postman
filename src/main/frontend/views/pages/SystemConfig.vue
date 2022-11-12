@@ -34,7 +34,9 @@
                             label="IP"
                             width="480">
                         <template slot-scope="scope">
-                            <span style="margin-left: 10px">{{ scope.row }}</span>
+                            <span style="margin-left: 10px">
+                              {{ scope.row.addr }}({{ $consts.REGISTRATION_CENTER_TYPE_MAP[scope.row.type] }})
+                            </span>
                         </template>
                     </el-table-column>
                     <el-table-column label="操作">
@@ -48,10 +50,22 @@
                 </el-table>
             </el-col>
         </el-row>
-        <el-form label-width="100px" style="margin:20px;width:95%;min-width:600px;">
+        <el-form label-width="140px" style="margin:20px;width:95%;min-width:600px;">
             <el-row>
                 <el-col>
-                    <el-form-item label="ZK:">
+                  <el-form-item label="注册中心类型:">
+                    <el-select v-model="type">
+                      <el-option
+                          v-for="(value,key) in $consts.REGISTRATION_CENTER_TYPE"
+                          :key="value"
+                          :label="key"
+                          :value="value">
+                      </el-option>
+                    </el-select>
+                  </el-form-item>
+                </el-col>
+                <el-col>
+                    <el-form-item label="注册中心:">
                         <el-input v-model="zk"></el-input>
                     </el-form-item>
                 </el-col>
@@ -80,6 +94,7 @@
         data(){
             return{
                 requestCodeMirror:'',
+                type: this.$consts.REGISTRATION_CENTER_TYPE.ZK,
                 zk:'',
                 password:'',
                 zkAddress: [],
@@ -90,23 +105,21 @@
                 let encodedZk = encodeURI(this.zk);
                 let params = {
                     "zk":encodedZk,
-                    "password":this.password
+                    "password":this.password,
+                    type:this.type
                 };
                 const loading = this.$loading({
                     lock: true,
-                    text: '正在初始化ZK配置,请耐心等待......',
+                    text: '正在初始化注册中心配置,请耐心等待......',
                     spinner: 'el-icon-loading',
                     background: 'rgba(0, 0, 0, 0.7)'
                 });
                 addConfig(params).then((res) => {
                     let code = res.data.code;
-                    if(code == 0){
+                    if(code === 0){
                         this.$message.success("保存成功");
                         window.localStorage.clear();
                         window.location.reload();
-                    }else{
-                        let error = res.data.error
-                        this.$message.error(error);
                     }
                     this.getConfigs();
 
@@ -123,20 +136,17 @@
                 });
             },
             deleteZk(index,value){
-                let encodedZk = encodeURI(value);
+                let encodedZk = encodeURI(value.addr);
                 let params = {
                     "zk":encodedZk,
                     "password":this.password
                 };
                 deleteZk(params).then((res) => {
                     let code = res.data.code;
-                    if(code == 0){
+                    if(code === 0){
                         this.$message.success("删除成功");
                         window.localStorage.clear();
                         window.location.reload();
-                    }else{
-                        let error = res.data.error
-                        this.$message.error(error);
                     }
                     this.getConfigs();
                 });

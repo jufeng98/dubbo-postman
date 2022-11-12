@@ -54,12 +54,12 @@ public class GrpcPostmanService implements PostmanService {
     }
 
     @Override
-    public void setLoadedToClassLoader(boolean load) {
-
+    public boolean getLoadedToClassLoader() {
+        return false;
     }
 
     @Override
-    public boolean getLoadedToClassLoader() {
-        return false;
+    public void setLoadedToClassLoader(boolean load) {
+
     }
 }

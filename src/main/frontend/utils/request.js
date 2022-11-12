@@ -24,6 +24,7 @@
 
 import axios from 'axios'
 import { Message, MessageBox } from 'element-ui'
+import Vue from "vue";
 
 // 创建axios实例
 const service = axios.create({
@@ -51,9 +52,17 @@ service.interceptors.response.use(
           }).catch(() => {
               console.log("catch,session过期留在当前页面")
           })
-      }else{
-          return response
+          return;
       }
+      if (response.data.code === 1) {
+          Vue.prototype.$message({
+              type: "error",
+              message: response.data.error,
+              duration: 6000,
+              showClose: true
+          });
+      }
+      return response
   },
   error => {
       console.log("错误类型:",typeof error);

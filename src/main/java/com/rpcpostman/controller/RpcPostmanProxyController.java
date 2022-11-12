@@ -24,20 +24,23 @@
 
 package com.rpcpostman.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.rpcpostman.dto.WebApiRspDto;
+import com.rpcpostman.service.AppFactory;
 import com.rpcpostman.service.Pair;
+import com.rpcpostman.service.context.InvokeContext;
 import com.rpcpostman.service.invocation.Invocation;
 import com.rpcpostman.service.invocation.Invoker;
 import com.rpcpostman.service.invocation.entity.PostmanDubboRequest;
-import com.rpcpostman.service.context.InvokeContext;
 import com.rpcpostman.util.JSON;
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
@@ -48,26 +51,27 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class RpcPostmanProxyController {
 
     private static final Logger logger = LoggerFactory.getLogger(RpcPostmanProxyController.class);
-
     @Autowired
-    private Invoker<Object,PostmanDubboRequest> invoker;
+    private AppFactory appFactory;
 
-    @RequestMapping(value = "/dubbo", method = RequestMethod.GET)
+    @SneakyThrows
+    @RequestMapping(value = "/dubbo", method = RequestMethod.POST)
     @ResponseBody
-    public WebApiRspDto query(@RequestParam(name = "cluster") String cluster,
-                              @RequestParam(name = "serviceName") String serviceName,
-                              @RequestParam(name = "interfaceKey") String interfaceKey,
-                              @RequestParam(name = "methodName") String methodName,
-                              @RequestParam(name = "dubboParam") String dubboParam,
-                              @RequestParam(name = "dubboIp") String dubboIp){
-
-
-        Pair<PostmanDubboRequest, Invocation> pair = InvokeContext.buildInvocation(cluster,serviceName,interfaceKey,methodName,dubboParam,dubboIp);
+    public WebApiRspDto<Object> dubbo(@RequestBody JsonNode jsonNode) {
+        String cluster = jsonNode.get("cluster").asText();
+        String serviceName = jsonNode.get("serviceName").asText();
+        String interfaceKey = jsonNode.get("interfaceKey").asText();
+        String methodName = jsonNode.get("methodName").asText();
+        String dubboParam = jsonNode.get("dubboParam").asText();
+        String dubboIp = jsonNode.get("dubboIp").asText();
+        Invoker<Object, PostmanDubboRequest> invoker = appFactory.getInvoker(cluster);
+        Pair<PostmanDubboRequest, Invocation> pair = InvokeContext.buildInvocation(cluster, serviceName, interfaceKey,
+                methodName, dubboParam, dubboIp);
         PostmanDubboRequest request = pair.getLeft();
         Invocation invocation = pair.getRight();
 
-        if(logger.isDebugEnabled()){
-            logger.debug("接收RPC-POSTMAN请求:"+ JSON.objectToString(request));
+        if (logger.isDebugEnabled()) {
+            logger.debug("接收RPC-POSTMAN请求:" + JSON.objectToString(request));
         }
 
         return invoker.invoke(request, invocation);

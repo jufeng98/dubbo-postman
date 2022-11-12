@@ -26,20 +26,21 @@ package com.rpcpostman.service.scenetest;
 
 import com.rpcpostman.dto.UserCaseDto;
 import com.rpcpostman.service.Pair;
+import com.rpcpostman.service.context.InvokeContext;
 import com.rpcpostman.service.invocation.Invocation;
 import com.rpcpostman.service.invocation.Invoker;
 import com.rpcpostman.service.invocation.entity.PostmanDubboRequest;
-import com.rpcpostman.service.context.InvokeContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author everythingbest
  * 批量请求,用于关联测试的操作
  * 接口1传递参数给接口2
- *
  */
 @Service
 public class SceneTester {
@@ -47,26 +48,26 @@ public class SceneTester {
     @Autowired
     Invoker<Object, PostmanDubboRequest> invoker;
 
-    public Map<String,Object> process(List<UserCaseDto> caseDtoList, String sceneScript){
+    public Map<String, Object> process(List<UserCaseDto> caseDtoList, String sceneScript) {
 
         List<Pair<PostmanDubboRequest, Invocation>> requestList = buildRequest(caseDtoList);
 
-        Map<String,Object> rst = JSEngine.runScript(requestList,invoker,sceneScript);
+        Map<String, Object> rst = JSEngine.runScript(requestList, invoker, sceneScript);
         return rst;
     }
 
-    private List<Pair<PostmanDubboRequest, Invocation>> buildRequest(List<UserCaseDto> caseDtoList){
+    private List<Pair<PostmanDubboRequest, Invocation>> buildRequest(List<UserCaseDto> caseDtoList) {
 
         List<Pair<PostmanDubboRequest, Invocation>> requestList = new ArrayList<>(1);
 
-        for(UserCaseDto caseDto : caseDtoList){
+        for (UserCaseDto caseDto : caseDtoList) {
             Pair<PostmanDubboRequest, Invocation> pair = InvokeContext.buildInvocation(
-                            caseDto.getZkAddress(),
-                            caseDto.getServiceName(),
-                            caseDto.getInterfaceKey(),
-                            caseDto.getMethodName(),
-                            caseDto.getRequestValue(),
-                            "");
+                    caseDto.getZkAddress(),
+                    caseDto.getServiceName(),
+                    caseDto.getInterfaceKey(),
+                    caseDto.getMethodName(),
+                    caseDto.getRequestValue(),
+                    "");
 
             requestList.add(pair);
         }

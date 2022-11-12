@@ -112,11 +112,11 @@
                             </template>
                         </el-table-column>
 
-                        <el-table-column label="接口名称" prop="className" width="200">
+                        <el-table-column label="接口名称" prop="className" width="200" show-overflow-tooltip>
                         </el-table-column>
-                        <el-table-column label="方法名称" prop="methodName" width="300">
+                        <el-table-column label="方法名称" prop="methodName" width="300" show-overflow-tooltip>
                         </el-table-column>
-                        <el-table-column label="应用名称" prop="serviceName">
+                        <el-table-column label="应用名称" prop="serviceName" show-overflow-tooltip>
                         </el-table-column>
 
                         <el-table-column label="组名称" prop="groupName">
@@ -178,11 +178,11 @@
                         label="ID"
                         prop="id">
                 </el-table-column>
-                <el-table-column label="接口名称" prop="className">
+                <el-table-column label="接口名称" prop="className" show-overflow-tooltip>
                 </el-table-column>
-                <el-table-column label="方法名称" prop="methodName" width="300px">
+                <el-table-column label="方法名称" prop="methodName" width="300px" show-overflow-tooltip>
                 </el-table-column>
-                <el-table-column label="应用名称" prop="serviceName">
+                <el-table-column label="应用名称" prop="serviceName" show-overflow-tooltip>
                 </el-table-column>
 
                 <el-table-column label="组名称" prop="groupName">

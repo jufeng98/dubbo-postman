@@ -40,52 +40,52 @@ import java.util.Map;
  * pom.xml里面的dependency的解析
  */
 public class XmlUtil {
-    
+
     private static Logger logger = LoggerFactory.getLogger(XmlUtil.class);
-    
-    public static Map<String,String> parseDependencyXml(String dependency){
-    
+
+    public static Map<String, String> parseDependencyXml(String dependency) {
+
         Map<String, String> dependencyMap = new HashMap<>();
-        
+
         try {
-    
+
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-    
+
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-    
+
             byte[] bytes = dependency.getBytes();
-    
+
             ByteArrayInputStream bi = new ByteArrayInputStream(bytes);
-    
+
             Document doc = dBuilder.parse(bi);
-    
+
             doc.getDocumentElement().normalize();
-    
+
             NodeList nList = doc.getElementsByTagName("groupId");
-    
+
             String content = nList.item(0).getTextContent();
-    
-            dependencyMap.put("groupId",content.trim());
-            
+
+            dependencyMap.put("groupId", content.trim());
+
             nList = doc.getElementsByTagName("artifactId");
-    
+
             content = nList.item(0).getTextContent();
-    
-            dependencyMap.put("artifactId",content.trim());
-            
+
+            dependencyMap.put("artifactId", content.trim());
+
             nList = doc.getElementsByTagName("version");
-    
+
             content = nList.item(0).getTextContent();
-    
-            dependencyMap.put("version",content.trim());
-            
-        }catch (Exception exp){
-    
-            logger.error("解析dependency失败,"+exp);
-            
+
+            dependencyMap.put("version", content.trim());
+
+        } catch (Exception exp) {
+
+            logger.error("解析dependency失败," + exp);
+
             return null;
         }
-        
+
         return dependencyMap;
     }
 }

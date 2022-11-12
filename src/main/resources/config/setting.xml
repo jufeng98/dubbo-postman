@@ -30,59 +30,18 @@
 
     <servers>
         <server>
-            <id>Releases</id>
-            <username>deployment</username>
-            <password>123</password>
-        </server>
-        <server>
-            <id>Snapshots</id>
-            <username>deployment</username>
-            <password>123</password>
+            <id>nexus</id>
+            <username>nexus</username>
+            <password>nexus</password>
         </server>
     </servers>
 
     <mirrors>
         <mirror>
-            <id>Local Releases Repository</id>
-            <mirrorOf>Local Releases Repository</mirrorOf>
+            <id>nexus</id>
+            <mirrorOf>*</mirrorOf>
             <name>postman Mirror</name>
-            <url>http://192.168.1.177:8081/nexus/content/repositories/releases</url>
-        </mirror>
-        <mirror>
-            <id>Local Snapshots Repository</id>
-            <mirrorOf>Local Snapshots Repository</mirrorOf>
-            <name>postman Mirror</name>
-            <url>http://192.168.1.177:8081/nexus/content/repositories/snapshots</url>
-        </mirror>
-        <mirror>
-            <id>Local Plugin Releases Repository</id>
-            <mirrorOf>Local Plugin Releases Repository</mirrorOf>
-            <name>postman Mirror</name>
-            <url>http://192.168.1.177:8081/nexus/content/repositories/releases</url>
-        </mirror>
-        <mirror>
-            <id>Local Plugin Snapshots Repository</id>
-            <mirrorOf>Local Plugin Snapshots Repository</mirrorOf>
-            <name>postman Mirror</name>
-            <url>http://192.168.1.177:8081/nexus/content/repositories/snapshots</url>
-        </mirror>
-        <mirror>
-            <id>Local Public Repository</id>
-            <mirrorOf>Local Public Repository</mirrorOf>
-            <name>postman Mirror</name>
-            <url>http://192.168.1.177:8081/nexus/content/groups/public</url>
-        </mirror>
-        <mirror>
-            <id>Local Thirdparty Repository</id>
-            <mirrorOf>Local Thirdparty Repository</mirrorOf>
-            <name>postman Mirror</name>
-            <url>http://192.168.1.177:8081/nexus/content/repositories/thirdparty</url>
-        </mirror>
-        <mirror>
-            <id>Local Central Repository</id>
-            <mirrorOf>Local Central Repository</mirrorOf>
-            <name>postman Mirror</name>
-            <url>http://192.168.1.177:8081/nexus/content/repositories/central</url>
+            <url>http://agent.javamaster.org:8081/nexus/content/groups/public/</url>
         </mirror>
     </mirrors>
 
@@ -91,80 +50,24 @@
             <id>nexus</id>
             <repositories>
                 <repository>
-                    <id>Local Releases Repository</id>
+                    <id>nexus</id>
                     <name>Local Releases Repository</name>
-                    <url>http://192.168.1.177:8081/nexus/content/repositories/releases</url>
+                    <url>http://agent.javamaster.org:8081/nexus/content/groups/public/</url>
                     <releases>
                         <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>false</enabled>
-                    </snapshots>
-                </repository>
-                <repository>
-                    <id>Local Snapshots Repository</id>
-                    <name>Local Snapshots Repository</name>
-                    <url>http://192.168.1.177:8081/nexus/content/repositories/snapshots</url>
-                    <releases>
-                        <enabled>false</enabled>
                     </releases>
                     <snapshots>
                         <enabled>true</enabled>
                     </snapshots>
                 </repository>
-                <repository>
-                    <id>Local Public Repository</id>
-                    <name>Local Public Repository</name>
-                    <url>http://192.168.1.177:8081/nexus/content/groups/public</url>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>false</enabled>
-                    </snapshots>
-                </repository>
-                <repository>
-                    <id>Local Thirdparty Repository</id>
-                    <name>Local Thirdparty Repository</name>
-                    <url>http://192.168.1.177:8081/nexus/content/repositories/thirdparty</url>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>false</enabled>
-                    </snapshots>
-                </repository>
-                <repository>
-                    <id>Local Central Repository</id>
-                    <name>Local Central Repository</name>
-                    <url>http://192.168.1.177:8081/nexus/content/repositories/central</url>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>false</enabled>
-                    </snapshots>
-                </repository>
-
             </repositories>
             <pluginRepositories>
                 <pluginRepository>
-                    <id>Local Plugin Releases Repository</id>
+                    <id>nexus</id>
                     <name>Local Plugin Releases Repository</name>
-                    <url>http://192.168.1.177:8081/nexus/content/repositories/releases</url>
+                    <url>http://agent.javamaster.org:8081/nexus/content/groups/public/</url>
                     <releases>
                         <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>false</enabled>
-                    </snapshots>
-                </pluginRepository>
-                <pluginRepository>
-                    <id>Local Plugin Snapshots Repository</id>
-                    <name>Local Plugin Snapshots Repository</name>
-                    <url>http://192.168.1.177:8081/nexus/content/repositories/snapshots</url>
-                    <releases>
-                        <enabled>false</enabled>
                     </releases>
                     <snapshots>
                         <enabled>true</enabled>

@@ -26,15 +26,12 @@ package com.rpcpostman.util;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.SneakyThrows;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 
 /**
@@ -42,8 +39,6 @@ import java.text.SimpleDateFormat;
  * 基于jackson的简单封装
  */
 public class JSON {
-
-    private static Logger logger = LoggerFactory.getLogger(JSON.class);
 
     public static ObjectMapper mapper;
 
@@ -61,34 +56,18 @@ public class JSON {
         mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true);
     }
 
-    public static String objectToString(Object object){
-
-        try {
-            return mapper.writeValueAsString(object);
-        } catch (JsonProcessingException e) {
-
-            logger.error("JSON序列化失败",e);
-        }
-        return "";
+    @SneakyThrows
+    public static String objectToString(Object object) {
+        return mapper.writeValueAsString(object);
     }
 
-    public static  <T> T parseObject(String jsonString, Class<T> tClass){
-
-        try {
-            return mapper.readValue(jsonString,tClass);
-        } catch (IOException e) {
-            logger.error("JSON反序列化失败",e);
-        }
-        return null;
+    @SneakyThrows
+    public static <T> T parseObject(String jsonString, Class<T> tClass) {
+        return mapper.readValue(jsonString, tClass);
     }
 
-    public static  Object parseObject(String jsonString,JavaType javaType){
-
-        try {
-            return mapper.readValue(jsonString, javaType);
-        } catch (IOException e) {
-            logger.error("JSON序列化失败",e);
-        }
-        return null;
+    @SneakyThrows
+    public static Object parseObject(String jsonString, JavaType javaType) {
+        return mapper.readValue(jsonString, javaType);
     }
 }

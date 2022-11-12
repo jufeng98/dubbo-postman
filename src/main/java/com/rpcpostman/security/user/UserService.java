@@ -33,11 +33,11 @@ import java.util.List;
  * @author everythingbest
  */
 public interface UserService {
-    
+
     List<User> list();
-    
+
     boolean saveNewUser(User user);
-    
+
     User findOrAdd(String userCode);
 
     boolean update(User user);

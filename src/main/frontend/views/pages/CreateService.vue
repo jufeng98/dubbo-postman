@@ -30,9 +30,11 @@
             <el-row>
                 <el-col :span="14">
                     <el-form-item label="注册中心：">
-                        <el-select v-model="zk" placeholder="请选择注册ZK" filterable>
-                            <el-option v-for="option in zkList" v-bind:value="option" :label="option">
-                                {{ option }}
+                        <el-select v-model="zk" placeholder="请选择注册中心" filterable>
+                            <el-option v-for="option in zkList" v-bind:value="option.addr"
+                                       :key="option.addr"
+                                       :label="option.addr + '(' + $consts.REGISTRATION_CENTER_TYPE_MAP[option.type] + ')'">
+                                {{ option.addr }}({{ $consts.REGISTRATION_CENTER_TYPE_MAP[option.type] }})
                             </el-option>
                         </el-select>
                     </el-form-item>
@@ -42,8 +44,8 @@
             <el-row>
                 <el-col :span="13">
                     <el-form-item label="服务名称：">
-                        <el-select v-model="zkServiceName" placeholder="DUBBO服务名称" filterable>
-                            <el-option v-for="option in serviceList" v-bind:value="option" :label="option">
+                        <el-select v-model="zkServiceName" placeholder="服务名称" filterable>
+                            <el-option v-for="option in serviceList" v-bind:value="option" :key="option" :label="option">
                                 {{ option }}
                             </el-option>
                         </el-select>
@@ -80,7 +82,7 @@
                 </el-col>
             </el-row>
             <el-form-item>
-                <a :href="'http://192.168.1.177:8081/nexus/#welcome'" target="_blank" class="el-button el-button--info">
+                <a :href="'http://192.168.236.7:8081/nexus/#welcome'" target="_blank" class="el-button el-button--mini">
                     NEXUS地址
                 </a>
                 <el-button :loading="isCreating" type="success" v-on:click="doCreate">创建</el-button>
@@ -123,9 +125,7 @@
                 this.$message.success("创建成功onSubmit");
             },
             doCreate(){
-                this.$confirm('确认创建服务吗？', '提示', {}).then(() => {
-                    this.createService()
-                });
+                this.createService()
             },
             async createService() {
                 if(this.zk == '' ||
@@ -193,9 +193,6 @@
                     let data = res.data.data;
                     this.serviceList = data;
                 });
-            },
-            onSubmit() {
-                console.log('submit!');
             },
             // 复制成功
             onCopy(e){

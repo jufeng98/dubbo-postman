@@ -25,43 +25,33 @@
 package com.rpcpostman.service.maven;
 
 import com.rpcpostman.service.GAV;
-import com.rpcpostman.util.LogResultPrintStream;
-import org.junit.Assert;
 import org.junit.Test;
-
-import java.io.ByteArrayOutputStream;
 
 public class MavenProcessorTest {
 
     @Test
-    public void testProcess(){
+    public void testProcess() {
 
         String key = "user.home";
 
-        System.setProperty(key,"c:\\tmp");
+        System.setProperty(key, "D:\\opsouce_project\\dubbo-postman\\dubbo-postman");
 
-        String nexusUrl = "http://192.168.1.177:8081/nexus/service/local/artifact/maven/redirect";
+        String nexusUrl = "http://nexus.javamaster.org:8081/nexus/service/local/artifact/maven/redirect";
+        String nexusUrlReleases = "http://nexus.javamaster.org:8081/nexus/service/local/repositories/thridparty/content/";
 
-        String fileBasePath ="c:/tmp";
+        String fileBasePath = "D:\\opsouce_project\\dubbo-postman\\dubbo-postman";
 
-        Maven processResources = new Maven(nexusUrl,fileBasePath);
+        Maven processResources = new Maven(nexusUrl, nexusUrlReleases, fileBasePath);
 
-        String g = "com.dubbo.postman";
-        String a = "dubbo-postman-api";
-        String v = "1.1.3-SNAPSHOT";
+        String g = "org.javamaster.b2c";
+        String a = "b2c-archetype-id";
+        String v = "1.0-SNAPSHOT";
 
         GAV gav = new GAV();
         gav.setVersion(v);
         gav.setArtifactID(a);
         gav.setGroupID(g);
 
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        LogResultPrintStream resultPrintStream = new LogResultPrintStream(stream);
-
-        processResources.dependency("test-service",gav,resultPrintStream);
-
-        String mvnOutPut = new String(resultPrintStream.getLogByteArray());
-
-        Assert.assertFalse(mvnOutPut.isEmpty());
+        processResources.dependency("test-service", gav);
     }
 }

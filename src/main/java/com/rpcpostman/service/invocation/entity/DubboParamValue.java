@@ -58,27 +58,27 @@ public class DubboParamValue implements RpcParamValue {
         return paramValues;
     }
 
-    public void setDubboUrl(String dubboUrl){
-        this.dubboUrl = dubboUrl;
-    }
-
     public String getDubboUrl() {
         return dubboUrl;
     }
 
-    public boolean isUseDubbo(){
+    public void setDubboUrl(String dubboUrl) {
+        this.dubboUrl = dubboUrl;
+    }
+
+    public boolean isUseDubbo() {
         return useDubbo;
     }
 
-    public void setUseDubbo(boolean useDubbo){
+    public void setUseDubbo(boolean useDubbo) {
         this.useDubbo = useDubbo;
     }
 
-    public String getRegistry(){
+    public String getRegistry() {
         return registry;
     }
 
-    public void setRegistry(String registry){
+    public void setRegistry(String registry) {
         this.registry = registry;
     }
 }

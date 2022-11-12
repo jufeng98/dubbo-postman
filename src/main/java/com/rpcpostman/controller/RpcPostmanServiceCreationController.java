@@ -25,17 +25,13 @@
 package com.rpcpostman.controller;
 
 import com.rpcpostman.dto.WebApiRspDto;
+import com.rpcpostman.service.AppFactory;
 import com.rpcpostman.service.GAV;
 import com.rpcpostman.service.Pair;
 import com.rpcpostman.service.creation.Creator;
+import com.rpcpostman.service.registry.RegisterFactory;
 import com.rpcpostman.service.registry.entity.InterfaceMetaInfo;
-
-import java.util.Map;
-
-import com.rpcpostman.service.registry.impl.DubboRegisterFactory;
 import com.rpcpostman.util.XmlUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,52 +39,58 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 /**
  * 提供服务的创建及刷新的功能
+ *
  * @author everythingbest
  */
 @Controller
 @RequestMapping("/dubbo-postman/")
 public class RpcPostmanServiceCreationController {
 
-    private final Logger logger = LoggerFactory.getLogger(RpcPostmanServiceCreationController.class);
-
     @Autowired
-    private Creator creator;
+    private AppFactory appFactory;
 
     /**
      * 根据zk,返回所有的应用名称,这个是zk里面的,还未创建
+     *
      * @param zk
      * @return
      */
-    @RequestMapping(value = "result/appNames",method = {RequestMethod.GET})
+    @RequestMapping(value = "result/appNames", method = {RequestMethod.GET})
     @ResponseBody
-    public WebApiRspDto getAppNames(@RequestParam("zk") String zk){
-
-        if(zk.isEmpty()){
+    public WebApiRspDto<Set<String>> getAppNames(@RequestParam("zk") String zk) {
+        if (zk.isEmpty()) {
             return WebApiRspDto.error("zk地址必须指定");
         }
-        Map<String,Map<String, InterfaceMetaInfo>> services = DubboRegisterFactory.getInstance().get(zk).getAllService();
-        return WebApiRspDto.success(services.keySet());
+        RegisterFactory registerFactory = appFactory.getRegisterFactory(zk);
+        Map<String, Map<String, InterfaceMetaInfo>> services = registerFactory.get(zk).getAllService();
+        return WebApiRspDto.success(services.keySet().stream()
+                .sorted()
+                .collect(Collectors.toCollection(LinkedHashSet::new)));
     }
 
-    @RequestMapping(value = "create",method = RequestMethod.GET)
+    @RequestMapping(value = "create", method = RequestMethod.GET)
     @ResponseBody
     public WebApiRspDto<String> createService(@RequestParam("zk") String zk,
-                                      @RequestParam("zkServiceName") String serviceName,
-                                      @RequestParam("dependency") String dependency){
-
-        if(serviceName == null || serviceName.isEmpty()){
-            return WebApiRspDto.error("必须选择一个服务名称",-1);
+                                              @RequestParam("zkServiceName") String serviceName,
+                                              @RequestParam("dependency") String dependency) {
+        if (serviceName == null || serviceName.isEmpty()) {
+            return WebApiRspDto.error("必须选择一个服务名称", -1);
         }
 
-        if(dependency == null || dependency.isEmpty()){
+        if (dependency == null || dependency.isEmpty()) {
             return WebApiRspDto.error("dependency不能为空");
         }
 
-        Map<String,String> dm = XmlUtil.parseDependencyXml(dependency);
+        Map<String, String> dm = XmlUtil.parseDependencyXml(dependency);
 
-        if(dm == null || dm.size() < 3){
+        if (dm == null || dm.size() < 3) {
             return WebApiRspDto.error("dependency格式不对,请指定正确的maven dependency,区分大小写");
         }
 
@@ -101,25 +103,27 @@ public class RpcPostmanServiceCreationController {
         gav.setArtifactID(a);
         gav.setVersion(v);
 
+        Creator creator = appFactory.getCreator(zk);
         Pair<Boolean, String> pair = creator.create(zk, gav, serviceName);
-        if(!pair.getLeft()){
+        if (!pair.getLeft()) {
             return WebApiRspDto.error(pair.getRight());
         }
         return WebApiRspDto.success(pair.getRight());
     }
 
-    @RequestMapping(value = "refresh",method = RequestMethod.GET)
+    @RequestMapping(value = "refresh", method = RequestMethod.GET)
     @ResponseBody
-    public WebApiRspDto refreshService(@RequestParam("zk") String zk,
-                                        @RequestParam("zkServiceName") String serviceName){
+    public WebApiRspDto<String> refreshService(@RequestParam("zk") String zk,
+                                       @RequestParam("zkServiceName") String serviceName) {
 
-        if(serviceName == null || serviceName.isEmpty()){
+        if (serviceName == null || serviceName.isEmpty()) {
 
-            return WebApiRspDto.error("必须选择一个服务名称",-1);
+            return WebApiRspDto.error("必须选择一个服务名称", -1);
         }
 
+        Creator creator = appFactory.getCreator(zk);
         Pair<Boolean, String> pair = creator.refresh(zk, serviceName);
-        if(!pair.getLeft()){
+        if (!pair.getLeft()) {
             return WebApiRspDto.error(pair.getRight());
         }
         return WebApiRspDto.success(pair.getRight());

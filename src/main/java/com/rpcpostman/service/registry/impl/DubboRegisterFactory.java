@@ -25,37 +25,17 @@
 package com.rpcpostman.service.registry.impl;
 
 import com.rpcpostman.service.registry.Register;
-
-import java.util.Set;
+import org.springframework.stereotype.Component;
 
 /**
  * @author everythingbest
  */
-public class DubboRegisterFactory extends AbstractRegisterFactory{
+@Component
+public class DubboRegisterFactory extends AbstractRegisterFactory {
 
-    private volatile static DubboRegisterFactory registerFactory;
-
-    private DubboRegisterFactory(){}
-
-    public static DubboRegisterFactory getInstance() {
-        if(registerFactory == null){
-            synchronized (DubboRegisterFactory.class){
-                if(registerFactory == null){
-                    registerFactory = new DubboRegisterFactory();
-                    return registerFactory;
-                }
-            }
-        }
-
-        return registerFactory;
+    @Override
+    public Register create(String cluster) {
+        return new ZkRegister(cluster);
     }
 
-    public Register create(String cluster){
-        Register register = new ZkRegister(cluster);
-        return register;
-    }
-
-    public Set<String> getClusterSet(){
-        return clusterSet;
-    }
 }

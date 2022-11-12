@@ -24,8 +24,8 @@
 
 package com.rpcpostman.service.registry.impl;
 
-import com.rpcpostman.service.registry.entity.InterfaceMetaInfo;
 import com.rpcpostman.service.registry.Register;
+import com.rpcpostman.service.registry.entity.InterfaceMetaInfo;
 
 import java.util.Map;
 

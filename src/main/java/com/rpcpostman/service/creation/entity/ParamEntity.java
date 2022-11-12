@@ -29,7 +29,6 @@ import lombok.Data;
 
 /**
  * @author everythingbest
- *
  */
 @Data
 public class ParamEntity {

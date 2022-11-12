@@ -24,8 +24,8 @@
 
 package com.rpcpostman.service.creation.entity;
 
-import com.rpcpostman.service.GAV;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.rpcpostman.service.GAV;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -78,12 +78,13 @@ public class DubboPostmanService implements PostmanService {
     }
 
     @Override
+    public boolean getLoadedToClassLoader() {
+        return loadedToClassLoader;
+    }
+
+    @Override
     public void setLoadedToClassLoader(boolean load) {
 
         this.loadedToClassLoader = load;
-    }
-
-    public boolean getLoadedToClassLoader(){
-        return loadedToClassLoader;
     }
 }

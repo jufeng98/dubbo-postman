@@ -24,12 +24,13 @@
 
 package com.rpcpostman.config;
 
-import com.rpcpostman.service.creation.entity.DubboPostmanService;
-import com.rpcpostman.service.repository.redis.RedisRepository;
-import com.rpcpostman.service.creation.entity.PostmanService;
+import static com.rpcpostman.service.AppFactory.getRegisterFactory;
 import com.rpcpostman.service.context.InvokeContext;
-import com.rpcpostman.service.registry.impl.DubboRegisterFactory;
+import com.rpcpostman.service.creation.entity.DubboPostmanService;
+import com.rpcpostman.service.creation.entity.PostmanService;
+import com.rpcpostman.service.registry.RegisterFactory;
 import com.rpcpostman.service.repository.redis.RedisKeys;
+import com.rpcpostman.service.repository.redis.RedisRepository;
 import com.rpcpostman.util.FileWithString;
 import com.rpcpostman.util.JSON;
 import org.slf4j.Logger;
@@ -47,6 +48,7 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.net.URL;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -55,125 +57,109 @@ import java.util.Set;
  */
 public class Initializer {
 
-    private Logger logger = LoggerFactory.getLogger(Initializer.class);
+    private final Logger logger = LoggerFactory.getLogger(Initializer.class);
 
     public void loadCreatedService(RedisRepository redisRepository,
-                                   String dubboModelRedisKey){
+                                   String dubboModelRedisKey) {
 
         Set<Object> serviceKeys = redisRepository.mapGetKeys(dubboModelRedisKey);
 
         logger.info("已经创建的服务数量:" + serviceKeys.size());
 
-        for (Object serviceKey : serviceKeys) {
-
-            Object object = redisRepository.mapGet(dubboModelRedisKey, serviceKey);
-
-            String dubboModelString = (String) object;
-
-            PostmanService postmanService = JSON.parseObject(dubboModelString, DubboPostmanService.class);
-
-            InvokeContext.putService((String)serviceKey,postmanService);
-        }
+        serviceKeys.parallelStream()
+                .forEach(serviceKey -> {
+                    String dubboModelString = redisRepository.mapGet(dubboModelRedisKey, serviceKey);
+                    PostmanService postmanService = JSON.parseObject(dubboModelString, DubboPostmanService.class);
+                    InvokeContext.putService((String) serviceKey, postmanService);
+                });
     }
 
     void copySettingXml(String userHomePath) throws Exception {
 
-        File file = new File(userHomePath+"/.m2/settings.xml");
+        File file = new File(userHomePath + "/.m2/settings.xml");
 
-        if(file.exists()){
+        if (file.exists()) {
             file.delete();
         }
 
-        if(!file.getParentFile().exists()){
+        if (!file.getParentFile().exists()) {
             file.getParentFile().mkdirs();
         }
 
-        try {
-            //复制文件内容
-            changLocalRepository(userHomePath + "/" + ".m2");
-        }catch (Exception exp){
-
-            logger.error("复制setting.xml文件失败",exp);
-            throw exp;
-        }
+        //复制文件内容
+        changLocalRepository(userHomePath + "/" + ".m2");
     }
 
     /**
      * 把setting.xml文件里面的localRepository改成服务器上的绝对目录
+     *
      * @param newPath
      * @throws Exception
      */
-    void changLocalRepository(String newPath) throws Exception{
+    void changLocalRepository(String newPath) throws Exception {
 
-        try {
-            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 
-            byte[] bytes;
+        byte[] bytes;
 
-            URL url = this.getClass().getClassLoader().getResource("config/setting.xml");
-            String content = FileWithString.file2String(url);
-            bytes = content.getBytes();
+        URL url = this.getClass().getClassLoader().getResource("config/setting.xml");
+        String content = FileWithString.file2String(url);
+        bytes = Objects.requireNonNull(content).getBytes();
 
-            ByteArrayInputStream bi = new ByteArrayInputStream(bytes);
+        ByteArrayInputStream bi = new ByteArrayInputStream(bytes);
 
-            Document doc = dBuilder.parse(bi);
+        Document doc = dBuilder.parse(bi);
 
-            doc.getDocumentElement().normalize();
+        doc.getDocumentElement().normalize();
 
-            logger.info("Root element :" + doc.getDocumentElement().getNodeName());
+        logger.info("Root element :" + doc.getDocumentElement().getNodeName());
 
-            NodeList nList = doc.getElementsByTagName("localRepository");
+        NodeList nList = doc.getElementsByTagName("localRepository");
 
-            String oldText = nList.item(0).getTextContent();
+        String oldText = nList.item(0).getTextContent();
 
-            logger.info("setting.xml的localRepository旧值:"+oldText);
+        logger.info("setting.xml的localRepository旧值:" + oldText);
 
-            String newContent = newPath+"/repository";
+        String newContent = newPath + "/repository";
 
-            nList.item(0).setTextContent(newContent);
+        nList.item(0).setTextContent(newContent);
 
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
 
-            Transformer transformer = transformerFactory.newTransformer();
+        Transformer transformer = transformerFactory.newTransformer();
 
-            DOMSource source = new DOMSource(doc);
+        DOMSource source = new DOMSource(doc);
 
-            newPath = newPath + "/settings.xml";
+        newPath = newPath + "/settings.xml";
 
-            logger.info("setting.xml路径:"+newPath);
+        logger.info("setting.xml路径:" + newPath);
 
-            StreamResult result = new StreamResult(new File(newPath));
+        StreamResult result = new StreamResult(new File(newPath));
 
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 
-            transformer.transform(source, result);
+        transformer.transform(source, result);
 
-            logger.info("setting.xml 更新成功");
-
-        } catch (Exception e) {
-
-            logger.error("setting.xml 更新失败");
-
-            throw e;
-        }
+        logger.info("setting.xml 更新成功");
     }
 
-    void loadZkAddress(RedisRepository redisRepository){
+    void loadZkAddress(RedisRepository redisRepository) {
 
         Set<Object> zkList = redisRepository.members(RedisKeys.CLUSTER_REDIS_KEY);
 
-        if(zkList == null || zkList.isEmpty()){
+        if (zkList == null || zkList.isEmpty()) {
             //系统第一次使用
             logger.warn("没有配置任何集群地址,请通过web页面添加集群地址");
+            return;
         }
 
-        if (zkList != null && !zkList.isEmpty()) {
-            logger.info("系统当前已经添加的集群地址:" + zkList);
-            for(Object cluster : zkList){
-                DubboRegisterFactory.getInstance().addCluster((String) cluster);
-                DubboRegisterFactory.getInstance().get((String) cluster);
-            }
+        logger.info("系统当前已经添加的集群地址:" + zkList);
+        for (Object cluster : zkList) {
+            Integer type = redisRepository.mapGet(RedisKeys.CLUSTER_REDIS_KEY_TYPE, cluster);
+            RegisterFactory registerFactory = getRegisterFactory(type);
+            registerFactory.addCluster((String) cluster);
+            registerFactory.get((String) cluster);
         }
     }
 }

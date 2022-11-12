@@ -34,7 +34,7 @@ public class ParamException extends Exception {
 
     private final int code;
 
-    public ParamException(String msg){
+    public ParamException(String msg) {
         super(msg);
         this.code = ResponseCode.SYSTEM_ERROR.getCode();
     }

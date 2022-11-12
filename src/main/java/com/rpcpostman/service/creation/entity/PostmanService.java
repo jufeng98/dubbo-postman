@@ -41,7 +41,7 @@ public interface PostmanService {
 
     List<InterfaceEntity> getInterfaceModelList();
 
-    void setLoadedToClassLoader(boolean load);
-
     boolean getLoadedToClassLoader();
+
+    void setLoadedToClassLoader(boolean load);
 }

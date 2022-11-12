@@ -24,8 +24,10 @@
 
 package com.rpcpostman.service.load.classloader;
 
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Enumeration;
 
 /**
  * @author everythingbest
@@ -45,7 +47,7 @@ public class ApiJarClassLoader extends URLClassLoader {
 
     public ApiJarClassLoader(URL[] urls) {
 
-        super(urls,Thread.currentThread().getContextClassLoader());
+        super(urls, Thread.currentThread().getContextClassLoader());
     }
 
     public Class<?> loadClassWithResolve(String name) throws ClassNotFoundException {
@@ -53,7 +55,7 @@ public class ApiJarClassLoader extends URLClassLoader {
         return loadClass(name, true);
     }
 
-    public void appendURL(URL url){
+    public void appendURL(URL url) {
 
         addURL(url);
     }
@@ -68,4 +70,15 @@ public class ApiJarClassLoader extends URLClassLoader {
 
         return super.loadClass(name, resolve);
     }
+
+    @Override
+    public URL findResource(String name) {
+        return super.findResource(name);
+    }
+
+    @Override
+    public Enumeration<URL> findResources(String name) throws IOException {
+        return super.findResources(name);
+    }
+
 }

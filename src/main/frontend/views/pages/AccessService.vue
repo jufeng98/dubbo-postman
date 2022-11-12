@@ -26,13 +26,16 @@
     <section class="app-container">
     <el-form label-width="90px"
              @submit.prevent="onSubmit"
+             v-loading="loadings.length"
              style="margin:0px;width:100%;min-width:600px;">
         <el-row v-show=pageArray[pageIndex].zkServiceShow>
             <el-col :span="14">
                 <el-form-item label="注册中心：" >
                     <el-select v-model="pageArray[pageIndex].zk" placeholder="必填，访问的ZK地址" filterable @change="changeZk">
-                        <el-option v-for="option in pageArray[pageIndex].zkList" v-bind:value="option" :label="option">
-                            {{ option }}
+                        <el-option v-for="option in pageArray[pageIndex].zkList" v-bind:value="option.addr"
+                                   :key="option.addr"
+                                   :label="option.addr + '(' + $consts.REGISTRATION_CENTER_TYPE_MAP[option.type] + ')'">
+                          {{ option.addr }}({{ $consts.REGISTRATION_CENTER_TYPE_MAP[option.type] }})
                         </el-option>
                     </el-select>
                 </el-form-item>
@@ -41,7 +44,8 @@
             <el-col :span="6">
                 <el-form-item label="服务名称：">
                     <el-select v-model="pageArray[pageIndex].serviceName" style="width: 100%" placeholder="必填，访问的服务名称" filterable @change="changeService">
-                        <el-option v-for="option in pageArray[pageIndex].serviceNames" v-bind:value="option" :label="option">
+                        <el-option v-for="option in pageArray[pageIndex].serviceNames" v-bind:value="option"
+                                   :key="option" :label="option">
                             {{ option }}
                         </el-option>
                     </el-select>
@@ -59,7 +63,8 @@
             <el-col :span="5">
                 <el-form-item label="接口名称：">
                     <el-select v-model="pageArray[pageIndex].provider" placeholder="必填，请选择接口名称" filterable @change="changeProvider">
-                        <el-option v-for="option in pageArray[pageIndex].providers" v-bind:value="option" :label="option">
+                        <el-option v-for="option in pageArray[pageIndex].providers"
+                                   v-bind:value="option" :key="option" :label="option">
                             {{ option }}
                         </el-option>
                     </el-select>
@@ -69,7 +74,8 @@
             <el-col :span="9">
                 <el-form-item label="方法：" label-width="60px">
                     <el-select v-model="pageArray[pageIndex].methodName" placeholder="必填，请选择方法名称" filterable @change="changeMethodName">
-                        <el-option v-for="option in pageArray[pageIndex].methodNames" v-bind:value="option.name" :label="option.name">
+                        <el-option v-for="option in pageArray[pageIndex].methodNames"
+                                   v-bind:value="option.name" :label="option.name" :key="option.name">
                             {{ option.name }}
                         </el-option>
                     </el-select>
@@ -103,7 +109,8 @@
             <el-col :span="5">
                 <el-form-item label="实例IP：" label-width="90px">
                     <el-select v-model="pageArray[pageIndex].ip" placeholder="可选，调试的时候使用" filterable clearable>
-                        <el-option v-for="option in pageArray[pageIndex].ips" v-bind:value="option" :label="option">
+                        <el-option v-for="option in pageArray[pageIndex].ips"
+                                   v-bind:value="option" :label="option" :key="option">
                             {{ option }}
                         </el-option>
                     </el-select>
@@ -234,7 +241,7 @@
         data() {
             return{
                 cachePageName:"allPages",
-
+                loadings:[],
                 myBackToTopStyle: {
                     right: '50px',
                     bottom: '50px',
@@ -458,6 +465,7 @@
                     groupName:groupName,
                     caseName:caseName
                 };
+                this.loadings.push("")
                 queryCaseDetail(param).then((res) => {
                     let code = res.data.code;
                     if(code == 0){
@@ -468,7 +476,7 @@
 
                         this.pageArray[this.pageIndex].provider = data.className;
 
-                        this.pageArray[this.pageIndex].providerName = data.providerName;
+                        this.pageArray[this.pageIndex].providerName = data.providerName||data.interfaceKey;
 
                         this.pageArray[this.pageIndex].methodName = data.methodName;
                         this.pageArray[this.pageIndex].request = data.requestValue;
@@ -482,10 +490,11 @@
                         console.log("查询caseDetail失败,",res.data.error);
                     }
                 }).finally(() => {
-                    this.pageArray[this.pageIndex].autoTriggerWatch = true;
+                  this.loadings.pop()
+                  this.pageArray[this.pageIndex].autoTriggerWatch = true;
                     this.getProviders();
                     //手动触发更新列表
-                    this. getAllService();
+                    this.getAllService();
                     this.getMethods();
                 });
             },
@@ -524,7 +533,6 @@
 
                 let providerName = this.pageArray[this.pageIndex].provider;
                 let infKey = this.pageArray[this.pageIndex].providerNameMap[providerName];
-
                 let path = "/"+this.pageArray[this.pageIndex].serviceName +"/"+
                     encodeURI(infKey)+"/"+this.pageArray[this.pageIndex].methodName;
                 this.pageArray[this.pageIndex].response = '';
@@ -600,9 +608,11 @@
                 });
             },
             getProviders(){
-                let ezk = encodeURI(this.pageArray[this.pageIndex].zk);
+              this.loadings.push("")
+              let ezk = encodeURI(this.pageArray[this.pageIndex].zk);
                 let params = {"zk":ezk,"serviceName":this.pageArray[this.pageIndex].serviceName};
                 return getAllProviders(params).then((res) =>{
+                    this.loadings.pop()
                     let ms = res.data.data;
                     this.pageArray[this.pageIndex].providerNameMap = ms;
                     this.pageArray[this.pageIndex].providers = [];
@@ -612,6 +622,7 @@
                 });
             },
             getMethods(){
+                this.loadings.push("")
                 let ezk = encodeURI(this.pageArray[this.pageIndex].zk);
                 console.log("providerKey请求:",this.pageArray[this.pageIndex].providerName);
                 let infKey = encodeURI(this.pageArray[this.pageIndex].providerName);
@@ -622,6 +633,7 @@
                 };
                 console.log("请求:",params);
                 getAllMethods(params).then((res) =>{
+                    this.loadings.pop()
                     let ms = res.data.data.methods;
                     this.pageArray[this.pageIndex].ips =res.data.data.serverIps;
                     this.pageArray[this.pageIndex].methodNames = ms;

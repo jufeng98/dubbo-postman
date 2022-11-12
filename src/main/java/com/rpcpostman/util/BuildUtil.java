@@ -29,34 +29,34 @@ package com.rpcpostman.util;
  */
 public class BuildUtil {
 
-    private final static String splitter = "_";
+    private final static String SPLITTER = "_";
 
-    public static String buildServiceKey(String cluster, String serviceName){
-        return cluster + splitter + serviceName;
+    public static String buildServiceKey(String cluster, String serviceName) {
+        return cluster + SPLITTER + serviceName;
     }
 
-    public static String buildInterfaceKey(String group, String interfaceName, String version){
+    public static String buildInterfaceKey(String group, String interfaceName, String version) {
 
         String versionAppend = version;
-        if(versionAppend == null || versionAppend.isEmpty()){
+        if (versionAppend == null || versionAppend.isEmpty()) {
             versionAppend = Constant.DEFAULT_VERSION;
         }
-        return group + splitter + interfaceName + splitter + versionAppend;
+        return group + SPLITTER + interfaceName + SPLITTER + versionAppend;
     }
 
-    public static String getGroupByInterfaceKey(String interfaceKey){
-        return interfaceKey.split(splitter)[0];
+    public static String getGroupByInterfaceKey(String interfaceKey) {
+        return interfaceKey.split(SPLITTER)[0];
     }
 
-    public static String getInterfaceNameByInterfaceKey(String interfaceKey){
-        return interfaceKey.split(splitter)[1];
+    public static String getInterfaceNameByInterfaceKey(String interfaceKey) {
+        return interfaceKey.split(SPLITTER)[1];
     }
 
-    public static String getVersionByInterfaceKey(String interfaceKey){
-        return interfaceKey.split(splitter)[2];
+    public static String getVersionByInterfaceKey(String interfaceKey) {
+        return interfaceKey.split(SPLITTER)[2];
     }
 
-    public static String getJavaMethodName(String methodName){
+    public static String getJavaMethodName(String methodName) {
         return methodName.split("\\(")[0];
     }
 
@@ -65,49 +65,45 @@ public class BuildUtil {
                                             String group,
                                             String interfaceName,
                                             String version,
-                                            String methodName){
-
+                                            String methodName) {
         String serviceKey = BuildUtil.buildServiceKey(cluster, serviceName);
-        String interfaceKey = BuildUtil.buildInterfaceKey(group,interfaceName,version);
-        String key = serviceKey + splitter + interfaceKey + splitter + methodName;
-
-        return key;
+        String interfaceKey = BuildUtil.buildInterfaceKey(group, interfaceName, version);
+        return serviceKey + SPLITTER + interfaceKey + SPLITTER + methodName;
     }
 
     public static String getMethodNameKey(String cluster,
                                           String serviceName,
                                           String interfaceKey,
-                                          String methodName){
+                                          String methodName) {
 
         String serviceKey = BuildUtil.buildServiceKey(cluster, serviceName);
-        String key = serviceKey + splitter + interfaceKey + splitter + methodName;
-
-        return key;
+        return serviceKey + SPLITTER + interfaceKey + SPLITTER + methodName;
     }
 
     /**
      * 把ip地址拼接成zk地址
      * zookeeper://192.168.11.29:2181?backup=192.168.11.32:2181,192.168.11.20:2181
+     *
      * @param zk
      * @return
      */
-    public static String buildZkUrl(final String zk){
-        String zkRegis = "";
-        if(zk.contains(",")){
+    public static String buildZkUrl(final String zk) {
+        StringBuilder zkRegis;
+        if (zk.contains(",")) {
             String[] zs = zk.split(",");
-            zkRegis = "zookeeper://"+zs[0];
-            if(zs.length > 1){
-                zkRegis += "?backup=";
-                for(int index = 1; index<zs.length; index++){
-                    zkRegis += zs[index];
-                    if(index < zs.length-1){
-                        zkRegis += ",";
+            zkRegis = new StringBuilder("zookeeper://" + zs[0]);
+            if (zs.length > 1) {
+                zkRegis.append("?backup=");
+                for (int index = 1; index < zs.length; index++) {
+                    zkRegis.append(zs[index]);
+                    if (index < zs.length - 1) {
+                        zkRegis.append(",");
                     }
                 }
             }
-        }else{
-            zkRegis = "zookeeper://"+zk;
+        } else {
+            zkRegis = new StringBuilder("zookeeper://" + zk);
         }
-        return zkRegis;
+        return zkRegis.toString();
     }
 }

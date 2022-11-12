@@ -36,7 +36,9 @@ import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import java.net.URL;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author everythingbest
@@ -51,43 +53,43 @@ class JSEngine {
 
     private static String internalJsFunction;
 
-    protected static Map<String,Object> runScript(List<Pair<PostmanDubboRequest, Invocation>> requestList, Invoker<Object, PostmanDubboRequest> sender, String scriptCode){
+    protected static Map<String, Object> runScript(List<Pair<PostmanDubboRequest, Invocation>> requestList, Invoker<Object, PostmanDubboRequest> sender, String scriptCode) {
 
-        if(StringUtils.isEmpty(internalJsFunction)){
+        if (StringUtils.isEmpty(internalJsFunction)) {
 
             //"script/propertyOperation.js"
             //"script/sendWrapper.js"
-            String[] pathArray = new String[]{"script/propertyOperation.js","script/sendWrapper.js"};
+            String[] pathArray = new String[]{"script/propertyOperation.js", "script/sendWrapper.js"};
 
             internalJsFunction = getAllJsContent(pathArray);
         }
 
         //添加默认的js函数
-        scriptCode = scriptCode+"\n"+internalJsFunction;
+        scriptCode = scriptCode + "\n" + internalJsFunction;
 
-        Map<String,Object> map = new LinkedHashMap<>();
+        Map<String, Object> map = new LinkedHashMap<>();
 
         try {
             Bindings bindings = engine.createBindings();
-            bindings.put("reqs",requestList);
-            bindings.put("sender",sender);
-            bindings.put("rst",map);
+            bindings.put("reqs", requestList);
+            bindings.put("sender", sender);
+            bindings.put("rst", map);
 
-            engine.eval(scriptCode,bindings);
+            engine.eval(scriptCode, bindings);
 
             return map;
         } catch (Exception e) {
 
             String expResult = ExceptionHelper.getExceptionStackString(e);
-            map.put("ScriptException",expResult);
+            map.put("ScriptException", expResult);
             return map;
         }
     }
 
-    private static  String getAllJsContent(String[] pathArray){
+    private static String getAllJsContent(String[] pathArray) {
 
         StringBuilder sb = new StringBuilder();
-        for(String path : pathArray){
+        for (String path : pathArray) {
 
             URL url = JSEngine.class.getClassLoader().getResource(path);
 

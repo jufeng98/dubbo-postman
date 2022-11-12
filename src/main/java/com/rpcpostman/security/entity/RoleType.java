@@ -30,42 +30,42 @@ package com.rpcpostman.security.entity;
 public enum RoleType {
 
     //各个角色定义
-    DEV,QA,QAS,ADMIN;
-    
-    public static boolean compare(RoleType ori,RoleType tar){
-    
-        if(ori == RoleType.DEV){
-        
-            if(tar == RoleType.DEV || tar == RoleType.ADMIN){
-                
-                return true;
-            }
-        }
-    
-        if(ori == RoleType.QA){
-        
-            if(tar == RoleType.QA || tar == RoleType.ADMIN){
-            
-                return true;
-            }
-        }
+    DEV, QA, QAS, ADMIN;
 
-        if(ori == RoleType.QAS){
+    public static boolean compare(RoleType ori, RoleType tar) {
 
-            if(tar == RoleType.QAS || tar == RoleType.QA || tar == RoleType.ADMIN){
+        if (ori == RoleType.DEV) {
+
+            if (tar == RoleType.DEV || tar == RoleType.ADMIN) {
 
                 return true;
             }
         }
 
-        if(ori == RoleType.ADMIN){
-        
-            if(tar == RoleType.ADMIN){
-            
+        if (ori == RoleType.QA) {
+
+            if (tar == RoleType.QA || tar == RoleType.ADMIN) {
+
                 return true;
             }
         }
-        
+
+        if (ori == RoleType.QAS) {
+
+            if (tar == RoleType.QAS || tar == RoleType.QA || tar == RoleType.ADMIN) {
+
+                return true;
+            }
+        }
+
+        if (ori == RoleType.ADMIN) {
+
+            if (tar == RoleType.ADMIN) {
+
+                return true;
+            }
+        }
+
         return false;
     }
 }

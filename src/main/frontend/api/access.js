@@ -83,8 +83,8 @@ export function getRemoteAssignedTemplate(params) {
 export function doRequest(params) {
     return request({
         url:'/dubbo',
-        method:'get',
-        params
+        method:'post',
+        data:params
     })
 }
 

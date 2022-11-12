@@ -24,18 +24,16 @@
 
 package com.rpcpostman.controller;
 
-import com.rpcpostman.service.creation.entity.DubboPostmanService;
-import com.rpcpostman.service.repository.redis.RedisRepository;
+import com.rpcpostman.service.context.InvokeContext;
 import com.rpcpostman.service.creation.entity.PostmanService;
-import com.rpcpostman.service.creation.entity.InterfaceEntity;
-import com.rpcpostman.service.repository.redis.RedisKeys;
-import com.rpcpostman.util.JSON;
 import com.rpcpostman.util.BuildUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author everythingbest
@@ -44,24 +42,20 @@ import java.util.Map;
 @Service
 public abstract class AbstractController {
 
-    @Autowired
-    private RedisRepository cacheService;
+    Map<String, String> getAllSimpleClassName(String zk, String serviceName) {
 
-    Map<String,String> getAllSimpleClassName(String zk, String serviceName){
+        String modelKey = BuildUtil.buildServiceKey(zk, serviceName);
+        Map<String, String> interfaceMap = new LinkedHashMap<>(10);
+        PostmanService postmanService = InvokeContext.getService(modelKey);
 
-        String modelKey = BuildUtil.buildServiceKey(zk,serviceName);
-        Object object = cacheService.mapGet(RedisKeys.RPC_MODEL_KEY,modelKey);
-        Map<String,String> interfaceMap = new HashMap<>(10);
-        PostmanService dubboModel = JSON.parseObject((String)object, DubboPostmanService.class);
-
-        for(InterfaceEntity interfaceModel : dubboModel.getInterfaceModelList()){
-
-            String className = interfaceModel.getInterfaceName();
-            String simpleClassName = className.substring(className.lastIndexOf(".")+1);
-
-            interfaceMap.put(simpleClassName,interfaceModel.getKey());
-        }
-
+        Objects.requireNonNull(postmanService).getInterfaceModelList().stream()
+                .map(interfaceEntity -> {
+                    String className = interfaceEntity.getInterfaceName();
+                    String simpleClassName = className.substring(className.lastIndexOf(".") + 1);
+                    return Pair.of(simpleClassName, interfaceEntity.getKey());
+                })
+                .sorted(Comparator.comparing(Pair::getLeft))
+                .forEach(pair -> interfaceMap.put(pair.getLeft(), pair.getRight()));
         return interfaceMap;
     }
 }

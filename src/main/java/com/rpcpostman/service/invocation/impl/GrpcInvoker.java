@@ -25,15 +25,15 @@
 package com.rpcpostman.service.invocation.impl;
 
 import com.rpcpostman.dto.WebApiRspDto;
+import com.rpcpostman.service.Pair;
 import com.rpcpostman.service.invocation.Invocation;
 import com.rpcpostman.service.invocation.Invoker;
 import com.rpcpostman.service.invocation.entity.PostmanRequest;
-import com.rpcpostman.service.Pair;
 
 /**
  * @author everythingbest
  */
-class GrpcInvoker implements Invoker<Object,PostmanRequest> {
+class GrpcInvoker implements Invoker<Object, PostmanRequest> {
 
     @Override
     public WebApiRspDto<Object> invoke(PostmanRequest request, Invocation invocation) {

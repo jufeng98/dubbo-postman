@@ -31,12 +31,12 @@ import com.rpcpostman.service.invocation.entity.PostmanRequest;
 /**
  * @author everythingbest
  */
-public interface Invoker<T,R extends PostmanRequest> {
+public interface Invoker<T, R extends PostmanRequest> {
 
     WebApiRspDto<T> invoke(R request, Invocation invocation);
 
     /**
      * 在js文件里面需要调用这个方法,方便进行场景测试
-    * */
-    WebApiRspDto<T> invoke(Pair<R,Invocation> pair);
+     */
+    WebApiRspDto<T> invoke(Pair<R, Invocation> pair);
 }

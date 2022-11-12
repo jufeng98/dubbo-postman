@@ -34,7 +34,6 @@ import java.util.Set;
 
 /**
  * @author everythingbest
- *
  */
 @Data
 public class InterfaceEntity {
@@ -43,27 +42,27 @@ public class InterfaceEntity {
      * serviceKey
      */
     String key;
-    
+
     String interfaceName;
 
     Set<String> serverIps = new HashSet<>();
 
     @JsonIgnore
     Class<?> interfaceClass;
-    
+
     Set<String> methodNames = new HashSet<>();
 
     List<MethodEntity> methods = new ArrayList<>();
-    
+
     String group;
-    
+
     String version;
-    
+
     long timeout;
-    
+
     String registryBeanName;
-    
+
     boolean check;
-    
+
     int retries;
 }

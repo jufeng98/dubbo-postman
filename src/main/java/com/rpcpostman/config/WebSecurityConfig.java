@@ -63,6 +63,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     /**
      * Spring Security 基本配置
+     *
      * @param httpSecurity
      * @throws Exception
      */
@@ -73,7 +74,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and().addFilter(casAuthenticationFilter())
                 .addFilterBefore(logoutFilter(), LogoutFilter.class)
                 .authorizeRequests()
-                .antMatchers("/js/**", "/css/**", "/imgs/**","/api/**").permitAll()
+                .antMatchers("/js/**", "/css/**", "/imgs/**", "/api/**").permitAll()
                 .antMatchers("/external/datasource/**").permitAll()
                 .anyRequest().authenticated()
                 .and().logout().invalidateHttpSession(true).deleteCookies("SESSION").permitAll()
@@ -105,13 +106,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         filter.setFilterProcessesUrl("/cas_security_check");
         return filter;
     }
-    
+
     public LogoutFilter logoutFilter() {
-        LogoutFilter filter = new LogoutFilter(SSO_URL + "/logout"+"?service="+SERVICE_HOME, new SecurityContextLogoutHandler());
+        LogoutFilter filter = new LogoutFilter(SSO_URL + "/logout" + "?service=" + SERVICE_HOME, new SecurityContextLogoutHandler());
         return filter;
     }
 
-//    @Bean
+    //    @Bean
     public CasAuthenticationProvider casAuthenticationProvider() {
         CasAuthenticationProvider provider = new CasAuthenticationProvider();
         provider.setTicketValidator(cas20ServiceTicketValidator());
@@ -123,7 +124,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private ServiceProperties serviceProperties() {
         ServiceProperties properties = new ServiceProperties();
-        properties.setService(SERVICE_HOME+"/cas_security_check");
+        properties.setService(SERVICE_HOME + "/cas_security_check");
         properties.setSendRenew(false);
         return properties;
     }

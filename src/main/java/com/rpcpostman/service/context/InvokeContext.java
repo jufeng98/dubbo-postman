@@ -24,14 +24,16 @@
 
 package com.rpcpostman.service.context;
 
-import com.rpcpostman.service.creation.entity.RequestParam;
+import com.rpcpostman.service.Pair;
 import com.rpcpostman.service.creation.entity.PostmanService;
+import com.rpcpostman.service.creation.entity.RequestParam;
 import com.rpcpostman.service.invocation.Invocation;
 import com.rpcpostman.service.invocation.entity.DubboInvocation;
 import com.rpcpostman.service.invocation.entity.PostmanDubboRequest;
 import com.rpcpostman.service.load.impl.JarLocalFileLoader;
-import com.rpcpostman.service.Pair;
 import com.rpcpostman.util.BuildUtil;
+import com.rpcpostman.util.Constant;
+import org.springframework.context.support.GenericApplicationContext;
 
 import java.util.List;
 import java.util.Map;
@@ -42,40 +44,48 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class InvokeContext {
 
+    private static final Map<String, GenericApplicationContext> CONTEXT_MAP = new ConcurrentHashMap<>();
+
     private static final Map<String, PostmanService> POSTMAN_SERVICE_MAP = new ConcurrentHashMap<>();
 
     private static final Map<String, List<RequestParam>> REQUESTPARAM_MAP = new ConcurrentHashMap<>();
 
-    public static PostmanService getService(String serviceKey){
-        PostmanService service = POSTMAN_SERVICE_MAP.getOrDefault(serviceKey,null);
-        return service;
+    public static PostmanService getService(String serviceKey) {
+        return POSTMAN_SERVICE_MAP.getOrDefault(serviceKey, null);
     }
 
-    public static List<RequestParam> getRequestParam(String methodNameKey){
-        List<RequestParam> requestParamList = REQUESTPARAM_MAP.getOrDefault(methodNameKey,null);
-        return requestParamList;
+    public static List<RequestParam> getRequestParam(String methodNameKey) {
+        return REQUESTPARAM_MAP.getOrDefault(methodNameKey, null);
     }
 
-    public static void putService(String serviceKey, PostmanService service){
-        POSTMAN_SERVICE_MAP.put(serviceKey,service);
+    public static void putService(String serviceKey, PostmanService service) {
+        POSTMAN_SERVICE_MAP.put(serviceKey, service);
     }
 
-    public static void putMethod(String methodKey, List<RequestParam> requestParamList){
-        REQUESTPARAM_MAP.put(methodKey,requestParamList);
+    public static void putContext(String serviceKey, GenericApplicationContext context) {
+        CONTEXT_MAP.put(serviceKey, context);
     }
 
-    public static void checkExistAndLoad(String cluster, String serviceName){
+    public static GenericApplicationContext getContext(String serviceKey) {
+        return CONTEXT_MAP.get(serviceKey);
+    }
+
+    public static void putMethod(String methodKey, List<RequestParam> requestParamList) {
+        REQUESTPARAM_MAP.put(methodKey, requestParamList);
+    }
+
+    public static void checkExistAndLoad(String cluster, String serviceName) {
         String serviceKey = BuildUtil.buildServiceKey(cluster, serviceName);
         PostmanService postmanService = InvokeContext.getService(serviceKey);
         checkExistAndLoad(postmanService);
     }
 
-    public static void checkExistAndLoad(PostmanService postmanService){
-        if(postmanService == null){
+    public static void checkExistAndLoad(PostmanService postmanService) {
+        if (postmanService == null) {
             return;
         }
         //服务重启的时候需要重新构建运行时信息
-        if(!postmanService.getLoadedToClassLoader()){
+        if (!postmanService.getLoadedToClassLoader()) {
             JarLocalFileLoader.loadRuntimeInfo(postmanService);
         }
     }
@@ -85,10 +95,8 @@ public class InvokeContext {
                                                                         String interfaceKey,
                                                                         String methodName,
                                                                         String dubboParam,
-                                                                        String dubboIp){
-
-
-        checkExistAndLoad(cluster,serviceName);
+                                                                        String dubboIp) {
+        checkExistAndLoad(cluster, serviceName);
 
         PostmanDubboRequest request = new PostmanDubboRequest();
         request.setCluster(cluster);
@@ -107,9 +115,9 @@ public class InvokeContext {
         String javaMethodName = BuildUtil.getJavaMethodName(methodName);
         invocation.setJavaMethodName(javaMethodName);
         String methodNameKey = BuildUtil.getMethodNameKey(cluster, serviceName, interfaceKey, methodName);
-        List<RequestParam> requestParamList =  InvokeContext.getRequestParam(methodNameKey);
+        List<RequestParam> requestParamList = InvokeContext.getRequestParam(methodNameKey);
         invocation.setRequestParams(requestParamList);
 
-        return new Pair<>(request,invocation);
+        return new Pair<>(request, invocation);
     }
 }

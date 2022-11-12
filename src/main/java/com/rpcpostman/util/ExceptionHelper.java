@@ -34,7 +34,7 @@ import java.io.PrintStream;
  */
 public class ExceptionHelper {
 
-    public static String getExceptionStackString(Exception exp){
+    public static String getExceptionStackString(Exception exp) {
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
 

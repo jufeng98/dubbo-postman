@@ -30,16 +30,14 @@ import org.slf4j.LoggerFactory;
 import java.util.function.Function;
 
 /**
- * @author everythingbest powered by WebApiResonse
  * @param <T>
+ * @author everythingbest powered by WebApiResonse
  */
-public class WebApiRspDto<T>{
-
-    private static final Logger logger = LoggerFactory.getLogger(WebApiRspDto.class);
+public class WebApiRspDto<T> {
 
     public static final int SUCCESS_CODE = 0;
     public static final int ERROR_CODE = 1;
-
+    private static final Logger logger = LoggerFactory.getLogger(WebApiRspDto.class);
     private int code;
     private String error;
     private T data;
@@ -96,7 +94,7 @@ public class WebApiRspDto<T>{
         try {
             return success(procedure.apply());
         } catch (Exception e) {
-            logger.error(e.getMessage(),e);
+            logger.error(e.getMessage(), e);
             return error(exceptionHandler.apply(e));
         }
     }
@@ -144,13 +142,21 @@ public class WebApiRspDto<T>{
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) { return true;}
-        if (o == null || getClass() != o.getClass()) {return false;}
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         WebApiRspDto<?> that = (WebApiRspDto<?>) o;
 
-        if (code != that.code) {return false;}
-        if (error != null ? !error.equals(that.error) : that.error != null) {return false;}
+        if (code != that.code) {
+            return false;
+        }
+        if (error != null ? !error.equals(that.error) : that.error != null) {
+            return false;
+        }
         return data.equals(that.data);
 
     }

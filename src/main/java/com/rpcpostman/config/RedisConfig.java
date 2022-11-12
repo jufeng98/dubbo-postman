@@ -24,11 +24,10 @@
 
 package com.rpcpostman.config;
 
-import com.rpcpostman.util.Constant;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisSentinelConfiguration;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import redis.clients.jedis.JedisPoolConfig;
@@ -39,38 +38,24 @@ import redis.clients.jedis.JedisPoolConfig;
  */
 @Configuration
 public class RedisConfig {
-
-    @Value("${sentinel.master}")
-    String nodeMaster;
-
-    @Value("${redis.password}")
-    String nodePassword;
-
-    @Value("${node1.ip}")
-    String node1Ip;
-
-    @Value("${node2.ip}")
-    String node2Ip;
-
-    @Value("${node3.ip}")
-    String node3Ip;
+    @Value("${redis.host}")
+    String host;
+    @Value("${redis.pwd}")
+    String pwd;
+    @Value("${redis.port}")
+    int port;
+    @Value("${redis.default.db}")
+    int db;
 
     @Bean
     public JedisConnectionFactory jedisConnectionFactory() {
+        RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
+        configuration.setHostName(host);
+        configuration.setPort(port);
+        configuration.setDatabase(db);
+        configuration.setPassword(pwd);
 
-        String[] node1 = node1Ip.split(Constant.PORT_SPLITTER);
-        String[] node2 = node1Ip.split(Constant.PORT_SPLITTER);
-        String[] node3 = node1Ip.split(Constant.PORT_SPLITTER);
-
-        RedisSentinelConfiguration sentinelConfig = new RedisSentinelConfiguration()
-                .master(nodeMaster)
-                .sentinel(node1[0], Integer.valueOf(node1[1]))
-                .sentinel(node2[0], Integer.valueOf(node2[1]))
-                .sentinel(node3[0], Integer.valueOf(node3[1]));
-
-        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory(sentinelConfig);
-
-        jedisConnectionFactory.setPassword(nodePassword);
+        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory(configuration);
 
         JedisPoolConfig poolConfig = new JedisPoolConfig();
 
@@ -82,12 +67,15 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate redisTemplate(){
-
-        RedisTemplate redisTemplate = new RedisTemplate();
-
+    public RedisTemplate<Object, Object> redisTemplate() {
+        RedisTemplate<Object, Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(jedisConnectionFactory());
-
+        // StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+        // redisTemplate.setKeySerializer(stringRedisSerializer);
+        // redisTemplate.setHashKeySerializer(stringRedisSerializer);
+        // GenericJackson2JsonRedisSerializer jackson2JsonRedisSerializer = new GenericJackson2JsonRedisSerializer();
+        // redisTemplate.setValueSerializer(jackson2JsonRedisSerializer);
+        // redisTemplate.setHashValueSerializer(jackson2JsonRedisSerializer);
         return redisTemplate;
     }
 }

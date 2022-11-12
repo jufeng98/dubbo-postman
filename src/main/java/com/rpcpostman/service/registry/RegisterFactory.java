@@ -24,12 +24,18 @@
 
 package com.rpcpostman.service.registry;
 
+import java.util.Set;
+
 /**
  * @author everythingbest
  */
 public interface RegisterFactory {
 
-   void addCluster(String cluster);
+    void addCluster(String cluster);
+
+    Register remove(String cluster);
 
     Register get(String cluster);
+
+    Set<String> getClusterSet();
 }

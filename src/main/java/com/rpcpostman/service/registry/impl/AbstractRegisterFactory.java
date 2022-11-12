@@ -46,18 +46,25 @@ public abstract class AbstractRegisterFactory implements RegisterFactory {
         clusterSet.add(cluster);
     }
 
-    public Register get(String cluster){
-        if(allRegisters.containsKey(cluster)){
+    @Override
+    public Register get(String cluster) {
+        if (allRegisters.containsKey(cluster)) {
             return allRegisters.get(cluster);
         }
         Register register = create(cluster);
-        allRegisters.put(cluster,register);
+        allRegisters.put(cluster, register);
         return register;
     }
 
-    public Register remove(String cluster){
+    @Override
+    public Register remove(String cluster) {
         return allRegisters.remove(cluster);
     }
 
     public abstract Register create(String cluster);
+
+    @Override
+    public Set<String> getClusterSet() {
+        return clusterSet;
+    }
 }

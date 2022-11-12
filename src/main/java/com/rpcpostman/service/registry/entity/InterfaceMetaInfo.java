@@ -36,21 +36,21 @@ import java.util.Set;
  */
 @Data
 public class InterfaceMetaInfo {
-    
+
     String applicationName;
-    
+
     String group;
-    
+
     String version;
-    
+
     String interfaceName;
-    
+
     /**
      * 这个是zk拼接的完整地址:dubbo://192.....
      */
     String serviceAddr;
-    
+
     Set<String> methodNames = Sets.newHashSet();
-    
+
     Set<String> serverIps = Sets.newHashSet();
 }

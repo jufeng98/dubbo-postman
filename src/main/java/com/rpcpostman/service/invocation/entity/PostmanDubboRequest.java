@@ -43,7 +43,7 @@ public class PostmanDubboRequest implements PostmanRequest {
         return dubboParam;
     }
 
-    public void setDubboParam(String dubboParam){
+    public void setDubboParam(String dubboParam) {
         this.dubboParam = dubboParam;
     }
 
@@ -95,7 +95,7 @@ public class PostmanDubboRequest implements PostmanRequest {
         this.methodName = methodName;
     }
 
-    public String getDubboIp(){
+    public String getDubboIp() {
         return dubboIp;
     }
 

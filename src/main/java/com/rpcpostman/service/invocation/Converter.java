@@ -31,7 +31,7 @@ import com.rpcpostman.service.invocation.exception.ParamException;
 /**
  * @author everythingbest
  */
-public interface Converter<R extends PostmanRequest,T extends RpcParamValue> {
+public interface Converter<R extends PostmanRequest, T extends RpcParamValue> {
 
-     T convert(R request, Invocation invocation) throws ParamException;
+    T convert(R request, Invocation invocation) throws ParamException;
 }

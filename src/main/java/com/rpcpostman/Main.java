@@ -29,25 +29,31 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 
 /**
  * RPC-POSTMAN启动主类
  * 如果使用cas,把exclude及后面的值去掉即可
+ *
  * @author everythingbest
  */
-@SpringBootApplication(exclude = org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration.class)
+@SpringBootApplication(exclude = {
+        SecurityAutoConfiguration.class,
+        DataSourceAutoConfiguration.class
+})
 public class Main {
 
     private static Logger logger = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
 
-        logger.warn("开始启动RPC-POSTMAN");
+        logger.info("开始启动RPC-POSTMAN");
 
         SpringApplication app = new SpringApplication(Main.class);
         app.setBannerMode(Banner.Mode.CONSOLE);
         app.run(args);
 
-        logger.warn("RPC-POSTMAN启动成功!");
+        logger.info("RPC-POSTMAN启动成功!");
     }
 }

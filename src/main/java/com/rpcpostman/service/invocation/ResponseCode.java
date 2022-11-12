@@ -26,12 +26,13 @@ package com.rpcpostman.service.invocation;
 
 /**
  * 定义响应状态码
+ *
  * @author everythingbest
  */
 public enum ResponseCode {
     //desc
-    SYSTEM_ERROR(-1,"系统错误"),
-    APP_ERROR(-2,"访问应用错误");
+    SYSTEM_ERROR(-1, "系统错误"),
+    APP_ERROR(-2, "访问应用错误");
 
     private int code;
 

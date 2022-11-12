@@ -24,11 +24,11 @@
 
 package com.rpcpostman.security.user.impl;
 
-import com.rpcpostman.service.repository.redis.RedisRepository;
-import com.rpcpostman.security.user.UserService;
 import com.rpcpostman.security.entity.RoleType;
 import com.rpcpostman.security.entity.User;
+import com.rpcpostman.security.user.UserService;
 import com.rpcpostman.service.repository.redis.RedisKeys;
+import com.rpcpostman.service.repository.redis.RedisRepository;
 import com.rpcpostman.util.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,25 +42,25 @@ import java.util.List;
  */
 @Service
 public class UserServiceImpl implements UserService {
-    
+
     final String defaultAdminCode = "00001";
 
     @Autowired
     RedisRepository redisRepository;
 
     @Override
-    public List<User> list(){
-    
+    public List<User> list() {
+
         List<User> userList = new ArrayList<>();
-        
+
         List<Object> userStrs = redisRepository.mapGetValues(RedisKeys.USER_KEY);
-        
-        for(Object str : userStrs){
-    
+
+        for (Object str : userStrs) {
+
             User user = JSON.parseObject(str.toString(), User.class);
 
             //只返回有权限的用户
-            if(user.getRoles().size() > 0){
+            if (user.getRoles().size() > 0) {
 
                 userList.add(user);
             }
@@ -70,40 +70,40 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean saveNewUser(User user){
-    
+    public boolean saveNewUser(User user) {
+
         String utr = JSON.objectToString(user);
 
-        redisRepository.mapPut(RedisKeys.USER_KEY,user.getUserCode(),utr);
-        
+        redisRepository.mapPut(RedisKeys.USER_KEY, user.getUserCode(), utr);
+
         return true;
     }
-    
+
     @Override
-    public User findOrAdd(String userCode){
-    
-        Object userStr = redisRepository.mapGet(RedisKeys.USER_KEY,userCode);
-    
-        if(userStr == null || userStr.toString().isEmpty()){
-    
+    public User findOrAdd(String userCode) {
+
+        Object userStr = redisRepository.mapGet(RedisKeys.USER_KEY, userCode);
+
+        if (userStr == null || userStr.toString().isEmpty()) {
+
             User user = User.of(userCode);
 
-            if(userCode.equals(defaultAdminCode)){
+            if (userCode.equals(defaultAdminCode)) {
 
                 user.getRoles().add(RoleType.ADMIN);
             }
 
             String utr = JSON.objectToString(user);
-            
-            redisRepository.mapPut(RedisKeys.USER_KEY,userCode,utr);
-            
+
+            redisRepository.mapPut(RedisKeys.USER_KEY, userCode, utr);
+
             return user;
-            
-        }else{
-    
+
+        } else {
+
             User user = JSON.parseObject(userStr.toString(), User.class);
 
-            if(userCode.equals(defaultAdminCode)){
+            if (userCode.equals(defaultAdminCode)) {
 
                 user.getRoles().add(RoleType.ADMIN);
             }
@@ -113,19 +113,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean update(User user){
-    
+    public boolean update(User user) {
+
         String utr = JSON.objectToString(user);
-    
-        redisRepository.mapPut(RedisKeys.USER_KEY,user.getUserCode(),utr);
-        
+
+        redisRepository.mapPut(RedisKeys.USER_KEY, user.getUserCode(), utr);
+
         return true;
     }
 
     @Override
-    public boolean delete(String userCode){
+    public boolean delete(String userCode) {
 
-        redisRepository.removeMap(RedisKeys.USER_KEY,userCode);
+        redisRepository.removeMap(RedisKeys.USER_KEY, userCode);
 
         return true;
     }

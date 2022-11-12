@@ -24,8 +24,8 @@
 
 package com.rpcpostman.controller;
 
-import com.rpcpostman.dto.SceneCaseDto;
 import com.rpcpostman.dto.AbstractCaseDto;
+import com.rpcpostman.dto.SceneCaseDto;
 import com.rpcpostman.dto.UserCaseDto;
 import com.rpcpostman.dto.WebApiRspDto;
 import com.rpcpostman.service.repository.redis.RedisRepository;
@@ -40,7 +40,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +47,7 @@ import java.util.Map;
 /**
  * 批量处理用例
  * 场景测试运行相关的操作
+ *
  * @author everythingbest
  */
 @Controller
@@ -56,7 +56,7 @@ public class RpcPostmanSceneTestRunnerController {
 
     private static Logger logger = LoggerFactory.getLogger(RpcPostmanSceneTestRunnerController.class);
 
-    @Resource
+    @Autowired
     RedisRepository cacheService;
 
     @Autowired
@@ -64,25 +64,18 @@ public class RpcPostmanSceneTestRunnerController {
 
     @ResponseBody
     @RequestMapping(value = "case/scene/run", method = RequestMethod.POST)
-    public WebApiRspDto<Map<String,Object>> runSceneCase(@RequestBody SceneCaseDto sceneDto){
+    public WebApiRspDto<Map<String, Object>> runSceneCase(@RequestBody SceneCaseDto sceneDto) {
 
-        try {
+        List<UserCaseDto> testCaseDtoList = new ArrayList<>(1);
 
-            List<UserCaseDto> testCaseDtoList = new ArrayList<>(1);
+        for (AbstractCaseDto dto : sceneDto.getCaseDtoList()) {
 
-            for (AbstractCaseDto dto : sceneDto.getCaseDtoList()) {
-
-                String jsonStr = (String) cacheService.mapGet(dto.getGroupName(), dto.getCaseName());
-                UserCaseDto caseDto = JSON.parseObject(jsonStr, UserCaseDto.class);
-                testCaseDtoList.add(caseDto);
-            }
-
-            Map<String,Object> rst = requestService.process(testCaseDtoList,sceneDto.getSceneScript());
-            return WebApiRspDto.success(rst);
-        }catch (Exception exp){
-
-            logger.error("调用异常,",exp);
-            return WebApiRspDto.error(exp.getMessage());
+            String jsonStr = cacheService.mapGet(dto.getGroupName(), dto.getCaseName());
+            UserCaseDto caseDto = JSON.parseObject(jsonStr, UserCaseDto.class);
+            testCaseDtoList.add(caseDto);
         }
+
+        Map<String, Object> rst = requestService.process(testCaseDtoList, sceneDto.getSceneScript());
+        return WebApiRspDto.success(rst);
     }
 }
