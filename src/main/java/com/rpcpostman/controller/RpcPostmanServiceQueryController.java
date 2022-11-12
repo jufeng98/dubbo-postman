@@ -24,6 +24,7 @@
 
 package com.rpcpostman.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.rpcpostman.dto.WebApiRspDto;
@@ -42,6 +43,7 @@ import com.rpcpostman.service.registry.entity.InterfaceMetaInfo;
 import com.rpcpostman.service.repository.redis.RedisKeys;
 import com.rpcpostman.service.repository.redis.RedisRepository;
 import com.rpcpostman.util.BuildUtil;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,6 +51,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.lang.reflect.Field;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -223,14 +227,34 @@ public class RpcPostmanServiceQueryController extends AbstractController {
 
         } else {
             try {
-
                 Class<?> clazz = classLoader.loadClassWithResolve(paramModel.getType());
-                Object clazzObject = clazz.newInstance();
+                Object clazzObject = newJsonObj(clazz);
                 param.put(paramModel.getName(), clazzObject);
             } catch (Exception e) {
                 param.put(paramModel.getName(), null);
             }
         }
+    }
+
+    @SneakyThrows
+    private static Object newJsonObj(Class<?> clazz) {
+        Object clazzObject = clazz.newInstance();
+        for (Field declaredField : clazz.getDeclaredFields()) {
+            if (declaredField.getType() == List.class) {
+                declaredField.setAccessible(true);
+                declaredField.set(clazzObject, Collections.emptyList());
+                continue;
+            }
+            String typeName = declaredField.getType().getTypeName();
+            if (!isPrimitive(typeName) && !typeName.startsWith("java")) {
+                try {
+                    declaredField.setAccessible(true);
+                    declaredField.set(clazzObject, declaredField.getType().newInstance());
+                } catch (Exception ignored) {
+                }
+            }
+        }
+        return JSONObject.toJSON(clazzObject);
     }
 
     /**
@@ -249,7 +273,7 @@ public class RpcPostmanServiceQueryController extends AbstractController {
 
     }
 
-    private boolean isPrimitive(String typeName) {
+    private static boolean isPrimitive(String typeName) {
         switch (typeName) {
             case "int":
             case "char":
@@ -264,6 +288,8 @@ public class RpcPostmanServiceQueryController extends AbstractController {
             case "java.lang.Long":
             case "java.lang.Double":
             case "java.lang.Float":
+            case "java.math.BigInteger":
+            case "java.math.BigDecimal":
                 return true;
             default:
                 return false;
