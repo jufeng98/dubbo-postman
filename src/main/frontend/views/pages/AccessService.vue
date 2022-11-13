@@ -73,7 +73,8 @@
 
             <el-col :span="9">
                 <el-form-item label="方法：" label-width="60px">
-                    <el-select v-model="pageArray[pageIndex].methodName" placeholder="必填，请选择方法名称" filterable @change="changeMethodName">
+                    <el-select v-model="pageArray[pageIndex].methodName" placeholder="必填，请选择方法名称"
+                                filterable clearable @change="changeMethodName">
                         <el-option v-for="option in pageArray[pageIndex].methodNames"
                                    v-bind:value="option.name" :label="option.name" :key="option.name">
                             {{ option.name }}

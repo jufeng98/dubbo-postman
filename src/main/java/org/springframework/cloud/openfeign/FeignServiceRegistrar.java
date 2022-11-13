@@ -23,7 +23,14 @@ public class FeignServiceRegistrar {
         FeignContext feignContext = new FeignContext();
         feignContext.setApplicationContext(context);
         context.getBeanFactory().registerSingleton("feignContext", feignContext);
-        context.getBeanFactory().registerSingleton("feignClientProperties", new FeignClientProperties());
+        FeignClientProperties feignClientProperties = new FeignClientProperties();
+        feignClientProperties.setDefaultToProperties(true);
+        feignClientProperties.setDefaultConfig("defaultConfig");
+        FeignClientProperties.FeignClientConfiguration config = new FeignClientProperties.FeignClientConfiguration();
+        config.setConnectTimeout(10000);
+        config.setReadTimeout(10000);
+        feignClientProperties.getConfig().put("defaultConfig", config);
+        context.getBeanFactory().registerSingleton("feignClientProperties", feignClientProperties);
         context.getBeanFactory().registerSingleton("feignClient", new FeignClientDefault());
         context.getBeanFactory().registerSingleton("feignTargeter", new HystrixTargeter());
         registrar.registerBeanDefinitions(

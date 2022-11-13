@@ -37,6 +37,7 @@ import com.rpcpostman.service.invocation.entity.DubboParamValue;
 import com.rpcpostman.service.invocation.entity.PostmanDubboRequest;
 import com.rpcpostman.util.Constant;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
@@ -128,19 +129,16 @@ class DubboInvoker extends AbstractInvoker implements Invoker<Object, PostmanDub
 
     ReferenceConfig<GenericService> createReference(PostmanDubboRequest request, DubboParamValue rpcParamValue) {
 
-        ReferenceConfig<GenericService> newReference = new ReferenceConfig<GenericService>();
+        ReferenceConfig<GenericService> newReference = new ReferenceConfig<>();
 
-        //设置默认超时无限制,用于在本地调试的时候用
-        newReference.setTimeout(Integer.MAX_VALUE);
+        newReference.setTimeout(10000);
         newReference.setApplication(application);
         newReference.setInterface(request.getInterfaceName());
 
         String group = request.getGroup();
 
         //default是我加的,dubbo默认是没有的
-        if (group.isEmpty() || group.equals("default")) {
-
-        } else {
+        if (StringUtils.isNotBlank(group) && !group.equals("default")) {
             newReference.setGroup(group);
         }
 

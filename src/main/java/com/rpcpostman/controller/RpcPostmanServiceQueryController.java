@@ -27,13 +27,13 @@ package com.rpcpostman.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.rpcpostman.dto.WebApiRspDto;
 import com.rpcpostman.enums.RegisterCenterType;
 import static com.rpcpostman.service.AppFactory.getRegisterFactory;
 import com.rpcpostman.service.context.InvokeContext;
 import com.rpcpostman.service.creation.entity.InterfaceEntity;
 import com.rpcpostman.service.creation.entity.MethodEntity;
-import com.rpcpostman.service.creation.entity.ParamEntity;
 import com.rpcpostman.service.creation.entity.PostmanService;
 import com.rpcpostman.service.load.classloader.ApiJarClassLoader;
 import com.rpcpostman.service.load.impl.JarLocalFileLoader;
@@ -43,7 +43,10 @@ import com.rpcpostman.service.registry.entity.InterfaceMetaInfo;
 import com.rpcpostman.service.repository.redis.RedisKeys;
 import com.rpcpostman.service.repository.redis.RedisRepository;
 import com.rpcpostman.util.BuildUtil;
+import com.rpcpostman.util.ClassUtil;
 import lombok.SneakyThrows;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,7 +55,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.lang.reflect.Field;
-import java.util.Collections;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -73,6 +78,7 @@ public class RpcPostmanServiceQueryController extends AbstractController {
     RedisRepository redisRepository;
     @Autowired
     private RedisRepository cacheService;
+    private static final Logger logger = LoggerFactory.getLogger(RpcPostmanServiceQueryController.class);
 
     /**
      * 返回已经注册的服务名称
@@ -190,14 +196,9 @@ public class RpcPostmanServiceQueryController extends AbstractController {
                 if (!methodModel.getName().equals(methodPath)) {
                     continue;
                 }
-
-                for (ParamEntity paramModel : methodModel.getParams()) {
-                    boolean primitiveValue = isPrimitive(paramModel.getType());
-                    if (primitiveValue) {
-                        param.put(paramModel.getName(), null);
-                    } else {
-                        setParams(paramModel, classLoader, param);
-                    }
+                for (Parameter parameter : methodModel.getMethod().getParameters()) {
+                    Object value = newObj(parameter, classLoader);
+                    param.put(parameter.getName(), JSONObject.toJSON(value));
                 }
             }
         }
@@ -205,56 +206,71 @@ public class RpcPostmanServiceQueryController extends AbstractController {
         return WebApiRspDto.success(param);
     }
 
-    void setParams(ParamEntity paramModel, ApiJarClassLoader classLoader, Map<String, Object> param) {
-        //集合类型,寻求更好的处理方式,泛型集合
-        if (paramModel.getType().contains("<")) {
-
-            String collectionName = paramModel.getType();
-            String genericObjectName = collectionName.substring(collectionName.indexOf("<") + 1, collectionName.indexOf(">"));
-
-            try {
-
-                Class<?> clazz = Class.forName(genericObjectName, true, classLoader);
-                Object clazzObject = clazz.newInstance();
-                List<Object> list = Lists.newArrayList();
-
-                list.add(clazzObject);
-
-                param.put(paramModel.getName(), list);
-            } catch (Exception e) {
-                param.put(paramModel.getName(), null);
+    @SneakyThrows
+    private static Object newObj(Parameter parameter, ClassLoader classLoader) {
+        Class<?> clazz = parameter.getType();
+        if (Collection.class.isAssignableFrom(clazz)) {
+            Type genericType = ClassUtil.getParamGenericType(parameter.getParameterizedType());
+            Object obj;
+            if (ClassUtil.shouldNew(genericType)) {
+                Class<?> aClass = Class.forName(genericType.getTypeName(), true, classLoader);
+                obj = newObj(aClass, classLoader, 1);
+            } else {
+                obj = null;
             }
-
+            return List.class.isAssignableFrom(clazz) ?
+                    Lists.newArrayList(obj) : Sets.newHashSet(obj);
         } else {
-            try {
-                Class<?> clazz = classLoader.loadClassWithResolve(paramModel.getType());
-                Object clazzObject = newJsonObj(clazz);
-                param.put(paramModel.getName(), clazzObject);
-            } catch (Exception e) {
-                param.put(paramModel.getName(), null);
+            if (ClassUtil.shouldNew(clazz)) {
+                return newObj(clazz, classLoader, 1);
+            } else {
+                return null;
             }
         }
     }
 
     @SneakyThrows
-    private static Object newJsonObj(Class<?> clazz) {
-        Object clazzObject = clazz.newInstance();
+    private static Object newObj(Class<?> clazz, ClassLoader classLoader, int deep) {
+        Object object;
+        try {
+            object = clazz.newInstance();
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            return null;
+        }
+        if (deep >= 3) {
+            return object;
+        }
         for (Field declaredField : clazz.getDeclaredFields()) {
-            if (declaredField.getType() == List.class) {
-                declaredField.setAccessible(true);
-                declaredField.set(clazzObject, Collections.emptyList());
-                continue;
-            }
-            String typeName = declaredField.getType().getTypeName();
-            if (!isPrimitive(typeName) && !typeName.startsWith("java")) {
-                try {
-                    declaredField.setAccessible(true);
-                    declaredField.set(clazzObject, declaredField.getType().newInstance());
-                } catch (Exception ignored) {
+            Class<?> fieldType = declaredField.getType();
+            declaredField.setAccessible(true);
+            if (Collection.class.isAssignableFrom(fieldType)) {
+                boolean isList = List.class.isAssignableFrom(fieldType);
+                Type genericType = ClassUtil.getParamGenericType(declaredField.getGenericType());
+                if (ClassUtil.shouldNew(genericType)) {
+                    try {
+                        Object fieldObj = newObj(Class.forName(genericType.getTypeName(), true, classLoader),
+                                classLoader, ++deep);
+                        declaredField.set(object, isList ? Lists.newArrayList(fieldObj) : Sets.newHashSet(fieldObj));
+                    } catch (Exception e) {
+                        logger.error(e.getMessage());
+                        declaredField.set(object, isList ? Lists.newArrayList() : Sets.newHashSet());
+                    }
+                } else {
+                    declaredField.set(object, isList ? Lists.newArrayList() : Sets.newHashSet());
+                }
+            } else {
+                if (ClassUtil.shouldNew(fieldType)) {
+                    try {
+                        Object fieldObj = newObj(fieldType, classLoader, ++deep);
+                        declaredField.set(object, fieldObj);
+                    } catch (Exception e) {
+                        logger.error(e.getMessage());
+                    }
                 }
             }
         }
-        return JSONObject.toJSON(clazzObject);
+        return object;
     }
 
     /**
@@ -273,26 +289,4 @@ public class RpcPostmanServiceQueryController extends AbstractController {
 
     }
 
-    private static boolean isPrimitive(String typeName) {
-        switch (typeName) {
-            case "int":
-            case "char":
-            case "long":
-            case "boolean":
-            case "float":
-            case "double":
-            case "[B":
-            case "byte[]":
-            case "java.lang.String":
-            case "java.lang.Integer":
-            case "java.lang.Long":
-            case "java.lang.Double":
-            case "java.lang.Float":
-            case "java.math.BigInteger":
-            case "java.math.BigDecimal":
-                return true;
-            default:
-                return false;
-        }
-    }
 }
