@@ -79,7 +79,7 @@ public class RpcPostmanSceneTestController {
     @ResponseBody
     public WebApiRspDto<SceneCaseDto> getSceneCase(@RequestParam("caseName") String caseName) {
 
-        List<UserCaseDto> testCaseDtoList = new ArrayList<>(1);
+        List<UserCaseDto> testCaseDtoList = new ArrayList<>();
 
         String value = cacheService.mapGet(RedisKeys.SCENE_CASE_KEY, caseName);
         SceneCaseDto sceneCaseDto = JSON.parseObject(value, SceneCaseDto.class);

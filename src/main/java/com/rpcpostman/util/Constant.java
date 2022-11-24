@@ -34,7 +34,7 @@ final public class Constant {
 
     public static final String USER_HOME = "user.home";
 
-    public final static String DEFAULT = "default";
+    public final static String GROUP_DEFAULT = "default";
 
     public final static String DEFAULT_VERSION = "1.0.0";
 

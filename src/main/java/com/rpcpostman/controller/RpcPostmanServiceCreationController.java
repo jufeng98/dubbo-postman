@@ -70,9 +70,11 @@ public class RpcPostmanServiceCreationController {
         }
         RegisterFactory registerFactory = appFactory.getRegisterFactory(zk);
         Map<String, Map<String, InterfaceMetaInfo>> services = registerFactory.get(zk).getAllService();
-        return WebApiRspDto.success(services.keySet().stream()
-                .sorted()
-                .collect(Collectors.toCollection(LinkedHashSet::new)));
+        return WebApiRspDto.success(
+                services.keySet().stream()
+                        .sorted()
+                        .collect(Collectors.toCollection(LinkedHashSet::new))
+        );
     }
 
     @RequestMapping(value = "create", method = RequestMethod.GET)
@@ -90,7 +92,7 @@ public class RpcPostmanServiceCreationController {
 
         Map<String, String> dm = XmlUtil.parseDependencyXml(dependency);
 
-        if (dm == null || dm.size() < 3) {
+        if (dm.size() < 3) {
             return WebApiRspDto.error("dependency格式不对,请指定正确的maven dependency,区分大小写");
         }
 
@@ -114,7 +116,7 @@ public class RpcPostmanServiceCreationController {
     @RequestMapping(value = "refresh", method = RequestMethod.GET)
     @ResponseBody
     public WebApiRspDto<String> refreshService(@RequestParam("zk") String zk,
-                                       @RequestParam("zkServiceName") String serviceName) {
+                                               @RequestParam("zkServiceName") String serviceName) {
 
         if (serviceName == null || serviceName.isEmpty()) {
 

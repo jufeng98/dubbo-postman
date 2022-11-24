@@ -30,8 +30,6 @@
 	<property name="local.logging.path" value="logs"/>
 	<property name="logging.file.path" value="${local.logging.path}/${project.name}"/>
 	<property name="logging.file.name" value="${logging.file.path}/${project.name}.log"/>
-	<property name="logging.file.warn.name" value="${logging.file.path}/${project.name}-warn.log"/>
-	<property name="logging.file.error.name" value="${logging.file.path}/${project.name}-error.log"/>
 	<property name="layout" value="%d %p [%t] %c{10}:%M:%L %m%n"/>
 
 	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
@@ -47,37 +45,7 @@
 		</filter>
 		<file>${logging.file.name}</file>
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<fileNamePattern>${logging.file.name}-%d{yyyy-MM-dd-HH}</fileNamePattern>
-			<maxHistory>30</maxHistory>
-		</rollingPolicy>
-		<encoder>
-			<charset>UTF-8</charset>
-			<pattern>${layout}</pattern>
-		</encoder>
-	</appender>
-
-	<appender name="warnFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-			<level>WARN</level>
-		</filter>
-		<file>${logging.file.warn.name}</file>
-		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<fileNamePattern>${logging.file.warn.name}-%d{yyyy-MM-dd}</fileNamePattern>
-			<maxHistory>30</maxHistory>
-		</rollingPolicy>
-		<encoder>
-			<charset>UTF-8</charset>
-			<pattern>${layout}</pattern>
-		</encoder>
-	</appender>
-
-	<appender name="errorFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-			<level>error</level>
-		</filter>
-		<file>${logging.file.error.name}</file>
-		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<fileNamePattern>${logging.file.error.name}-%d{yyyy-MM-dd}</fileNamePattern>
+			<fileNamePattern>${logging.file.name}-%d{yyyy-MM-dd}</fileNamePattern>
 			<maxHistory>30</maxHistory>
 		</rollingPolicy>
 		<encoder>
@@ -90,7 +58,5 @@
 		<level value="info"/>
 		<appender-ref ref="stdout"/>
 		<appender-ref ref="infoFile"/>
-		<appender-ref ref="warnFile"/>
-		<appender-ref ref="errorFile"/>
 	</root>
 </configuration>

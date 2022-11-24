@@ -59,14 +59,13 @@ class FeignInvoker extends AbstractInvoker implements Invoker<Object, PostmanDub
         String serviceKey = BuildUtil.buildServiceKey(request.getCluster(), request.getServiceName());
         GenericApplicationContext context = InvokeContext.getContext(serviceKey);
         if (context == null) {
-            creator.initAndPutContext(request.getCluster(), request.getServiceName());
-            context = InvokeContext.getContext(serviceKey);
+            context = creator.initAndPutContext(request.getCluster(), request.getServiceName());
         }
-        Class<?> aClass = Objects.requireNonNull(context.getClassLoader()).loadClass(request.getInterfaceName());
-        Object feignService = context.getBean(aClass);
+        Class<?> feignClz = Objects.requireNonNull(context.getClassLoader()).loadClass(request.getInterfaceName());
+        Object feignService = context.getBean(feignClz);
         Class<?>[] parameterTypes = invocation.getParams().stream()
                 .map(RequestParam::getTargetParaType).toArray(Class[]::new);
-        Method method = aClass.getDeclaredMethod(invocation.getJavaMethodName(), parameterTypes);
+        Method method = feignClz.getDeclaredMethod(invocation.getJavaMethodName(), parameterTypes);
         method.setAccessible(true);
         final DubboParamValue rpcParamValue = converter.convert(request, invocation);
         try {

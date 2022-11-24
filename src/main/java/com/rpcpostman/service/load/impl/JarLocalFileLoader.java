@@ -47,6 +47,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -95,7 +96,7 @@ public class JarLocalFileLoader implements Loader {
         File baseFile = new File(jarPath);
         List<URL> urlList = new ArrayList<>();
 
-        for (File file : baseFile.listFiles()) {
+        for (File file : Objects.requireNonNull(baseFile.listFiles())) {
             URL url = getFileUrls(file);
             urlList.add(url);
         }
@@ -120,13 +121,10 @@ public class JarLocalFileLoader implements Loader {
 
     /**
      * 通过ApiJarClassLoader加载所有的接口,同时解析接口里面的所有方法构建运行时类信息,添加到invokeContext里面
-     *
-     * @param urlList
-     * @param service
      */
     private static void doLoad(List<URL> urlList, PostmanService service) {
 
-        ApiJarClassLoader jarFileClassLoader = new ApiJarClassLoader(urlList.toArray(new URL[]{}));
+        ApiJarClassLoader jarFileClassLoader = new ApiJarClassLoader(urlList.toArray(new URL[0]));
 
         String serviceKey = BuildUtil.buildServiceKey(service.getCluster(), service.getServiceName());
         LOADER_MAP.put(serviceKey, jarFileClassLoader);
@@ -162,7 +160,7 @@ public class JarLocalFileLoader implements Loader {
 
                         String wholeName = parameter.getParameterizedType().getTypeName();
                         String simpleName = wholeName.substring(wholeName.lastIndexOf(".") + 1);
-                        paramStr.append(simpleName + ",");
+                        paramStr.append(simpleName).append(",");
 
                         methodModel.getParams().add(paramModel);
 

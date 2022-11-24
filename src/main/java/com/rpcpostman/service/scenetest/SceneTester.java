@@ -52,8 +52,7 @@ public class SceneTester {
 
         List<Pair<PostmanDubboRequest, Invocation>> requestList = buildRequest(caseDtoList);
 
-        Map<String, Object> rst = JSEngine.runScript(requestList, invoker, sceneScript);
-        return rst;
+        return JSEngine.runScript(requestList, invoker, sceneScript);
     }
 
     private List<Pair<PostmanDubboRequest, Invocation>> buildRequest(List<UserCaseDto> caseDtoList) {

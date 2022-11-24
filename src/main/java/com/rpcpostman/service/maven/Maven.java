@@ -96,7 +96,6 @@ public class Maven {
         File libfile = new File(jarPath);
 
         if (libfile.exists()) {
-
             file.delete();
         }
 

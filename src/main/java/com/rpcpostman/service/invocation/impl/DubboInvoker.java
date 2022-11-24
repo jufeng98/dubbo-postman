@@ -36,6 +36,7 @@ import com.rpcpostman.service.invocation.Invoker;
 import com.rpcpostman.service.invocation.entity.DubboParamValue;
 import com.rpcpostman.service.invocation.entity.PostmanDubboRequest;
 import com.rpcpostman.util.Constant;
+import static com.rpcpostman.util.Constant.GROUP_DEFAULT;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Primary;
@@ -65,7 +66,8 @@ class DubboInvoker extends AbstractInvoker implements Invoker<Object, PostmanDub
         GenericService service = getOrCreateService(request, rpcParamValue);
         long start = System.currentTimeMillis();
 
-        Object obj = service.$invoke(invocation.getJavaMethodName(), rpcParamValue.getParamTypeNames().toArray(new String[]{}), rpcParamValue.getParamValues().toArray());
+        Object obj = service.$invoke(invocation.getJavaMethodName(), rpcParamValue.getParamTypeNames()
+                .toArray(new String[]{}), rpcParamValue.getParamValues().toArray());
 
         long end = System.currentTimeMillis();
         long elapse = end - start;
@@ -138,7 +140,7 @@ class DubboInvoker extends AbstractInvoker implements Invoker<Object, PostmanDub
         String group = request.getGroup();
 
         //default是我加的,dubbo默认是没有的
-        if (StringUtils.isNotBlank(group) && !group.equals("default")) {
+        if (StringUtils.isNotBlank(group) && !GROUP_DEFAULT.equals(group)) {
             newReference.setGroup(group);
         }
 

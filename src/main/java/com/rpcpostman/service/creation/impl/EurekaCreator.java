@@ -38,6 +38,7 @@ import com.rpcpostman.service.load.impl.JarLocalFileLoader;
 import com.rpcpostman.service.registry.impl.EurekaRegister;
 import com.rpcpostman.service.repository.redis.RedisKeys;
 import com.rpcpostman.util.BuildUtil;
+import com.rpcpostman.util.Constant;
 import com.rpcpostman.util.JSON;
 import lombok.SneakyThrows;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -92,15 +93,16 @@ class EurekaCreator extends AbstractCreator implements Creator {
         Object serviceObj = redisRepository.mapGet(RedisKeys.RPC_MODEL_KEY, serviceKey);
         PostmanService postmanService = JSON.parseObject((String) serviceObj, DubboPostmanService.class);
         create(cluster, Objects.requireNonNull(postmanService).getGav(), serviceName);
-        return new Pair<>(true, "");
+        return new Pair<>(true, "成功");
     }
 
-    public void initAndPutContext(String cluster, String serviceName) {
+    public GenericApplicationContext initAndPutContext(String cluster, String serviceName) {
         String serviceKey = BuildUtil.buildServiceKey(cluster, serviceName);
         PostmanService service = InvokeContext.getService(serviceKey);
         GenericApplicationContext context = FeignServiceRegistrar.register(service.getGav(),
                 JarLocalFileLoader.getAllClassLoader().get(serviceKey));
         InvokeContext.putContext(serviceKey, context);
+        return context;
     }
 
     @SneakyThrows
@@ -141,8 +143,8 @@ class EurekaCreator extends AbstractCreator implements Creator {
                     interfaceModel.setInterfaceName(providerName);
                     interfaceModel.setMethodNames(methodNames);
                     interfaceModel.setServerIps(Collections.emptySet());
-                    interfaceModel.setVersion("1.0.0");
-                    interfaceModel.setGroup("default");
+                    interfaceModel.setVersion(Constant.DEFAULT_VERSION);
+                    interfaceModel.setGroup(Constant.GROUP_DEFAULT);
                     interfaceModel.setKey(BuildUtil.buildInterfaceKey(interfaceModel.getGroup(), providerName, interfaceModel.getVersion()));
                     return interfaceModel;
                 })

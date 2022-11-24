@@ -24,15 +24,14 @@
 
 package com.rpcpostman.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.google.common.collect.Maps;
+import lombok.SneakyThrows;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -41,50 +40,40 @@ import java.util.Map;
  */
 public class XmlUtil {
 
-    private static Logger logger = LoggerFactory.getLogger(XmlUtil.class);
-
+    @SneakyThrows
     public static Map<String, String> parseDependencyXml(String dependency) {
 
-        Map<String, String> dependencyMap = new HashMap<>();
+        Map<String, String> dependencyMap = Maps.newHashMap();
 
-        try {
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 
-            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 
-            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+        byte[] bytes = dependency.getBytes();
 
-            byte[] bytes = dependency.getBytes();
+        ByteArrayInputStream bi = new ByteArrayInputStream(bytes);
 
-            ByteArrayInputStream bi = new ByteArrayInputStream(bytes);
+        Document doc = dBuilder.parse(bi);
 
-            Document doc = dBuilder.parse(bi);
+        doc.getDocumentElement().normalize();
 
-            doc.getDocumentElement().normalize();
+        NodeList nList = doc.getElementsByTagName("groupId");
 
-            NodeList nList = doc.getElementsByTagName("groupId");
+        String content = nList.item(0).getTextContent();
 
-            String content = nList.item(0).getTextContent();
+        dependencyMap.put("groupId", content.trim());
 
-            dependencyMap.put("groupId", content.trim());
+        nList = doc.getElementsByTagName("artifactId");
 
-            nList = doc.getElementsByTagName("artifactId");
+        content = nList.item(0).getTextContent();
 
-            content = nList.item(0).getTextContent();
+        dependencyMap.put("artifactId", content.trim());
 
-            dependencyMap.put("artifactId", content.trim());
+        nList = doc.getElementsByTagName("version");
 
-            nList = doc.getElementsByTagName("version");
+        content = nList.item(0).getTextContent();
 
-            content = nList.item(0).getTextContent();
-
-            dependencyMap.put("version", content.trim());
-
-        } catch (Exception exp) {
-
-            logger.error("解析dependency失败," + exp);
-
-            return null;
-        }
+        dependencyMap.put("version", content.trim());
 
         return dependencyMap;
     }
