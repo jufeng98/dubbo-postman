@@ -126,7 +126,7 @@
 
             <el-col :span="5" :offset="1">
                 <el-form-item >
-                    <el-dropdown  @command="handleCommand"  split-button @click="saveNewTemplate" type="info">
+                    <el-dropdown  @command="handleCommand"  split-button @click="saveNewTemplate" type="primary">
                         保存
                         <el-dropdown-menu slot="dropdown">
                             <el-dropdown-item command="saveAs">另存为...</el-dropdown-item>

@@ -233,7 +233,11 @@ public class RpcPostmanServiceQueryController extends AbstractController {
     private static Object newObj(Class<?> clazz, ClassLoader classLoader, int deep) {
         Object object;
         try {
-            object = clazz.newInstance();
+            if (clazz.isEnum()) {
+                return null;
+            } else {
+                object = clazz.newInstance();
+            }
         } catch (Exception e) {
             logger.error(e.getMessage());
             return null;
