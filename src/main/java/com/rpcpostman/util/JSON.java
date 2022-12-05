@@ -66,8 +66,6 @@ public class JSON {
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true);
-        mapper.setSerializationInclusion(JsonInclude.Include.ALWAYS);
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.configure(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE, false);
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         SimpleModule simpleModule = new SimpleModule();
