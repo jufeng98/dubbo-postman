@@ -109,7 +109,7 @@
         <el-row >
             <el-col :span="5">
                 <el-form-item label="实例IP：" label-width="90px">
-                    <el-select v-model="pageArray[pageIndex].ip" placeholder="可选，调试的时候使用" filterable clearable>
+                    <el-select v-model="pageArray[pageIndex].ip" placeholder="可选，调试的时候使用" filterable clearable allow-create>
                         <el-option v-for="option in pageArray[pageIndex].ips"
                                    v-bind:value="option" :label="option" :key="option">
                             {{ option }}

@@ -5,6 +5,10 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import com.rpcpostman.inteceptor.AppInterceptor;
 import com.rpcpostman.serializer.BigDecimalJsonSerializer;
 import com.rpcpostman.serializer.LongJsonSerializer;
@@ -21,6 +25,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -57,6 +65,11 @@ public class MvcConfig implements WebMvcConfigurer {
                 simpleModule.addSerializer(BigDecimal.class, BigDecimalJsonSerializer.INSTANCE);
                 simpleModule.addSerializer(Long.class, new LongJsonSerializer());
                 objectMapper.registerModule(simpleModule);
+                JavaTimeModule javaTimeModule = new JavaTimeModule();
+                javaTimeModule.addSerializer(LocalDate.class, new LocalDateSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+                javaTimeModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                javaTimeModule.addSerializer(LocalTime.class, new LocalTimeSerializer(DateTimeFormatter.ofPattern("HH:mm:ss")));
+                objectMapper.registerModule(javaTimeModule);
             }
         });
     }
