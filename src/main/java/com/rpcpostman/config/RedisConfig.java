@@ -30,6 +30,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import redis.clients.jedis.JedisPoolConfig;
 
 /**
@@ -77,5 +78,10 @@ public class RedisConfig {
         // redisTemplate.setValueSerializer(jackson2JsonRedisSerializer);
         // redisTemplate.setHashValueSerializer(jackson2JsonRedisSerializer);
         return redisTemplate;
+    }
+
+    @Bean
+    public StringRedisTemplate stringRedisTemplate() {
+        return new StringRedisTemplate(jedisConnectionFactory());
     }
 }
