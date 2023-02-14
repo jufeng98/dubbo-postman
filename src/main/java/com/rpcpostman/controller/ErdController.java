@@ -30,14 +30,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rpcpostman.model.*;
 import com.rpcpostman.model.erd.ErdOnlineModel;
 import lombok.SneakyThrows;
-import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
-import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
 import java.util.*;
 
 /**
@@ -61,6 +58,10 @@ public class ErdController {
     @RequestMapping(value = "/ncnb/project/statistic", method = {RequestMethod.GET, RequestMethod.POST})
     public ResultVo<StatisticVo> statistic() {
         String jsonDataStr = stringRedisTemplate.opsForValue().get(prefix + "statistic");
+        if (jsonDataStr == null) {
+            jsonDataStr = "{\"yesterday\":7,\"total\":1334,\"month\":48,\"today\":5}";
+            stringRedisTemplate.opsForValue().set(prefix + "statistic", jsonDataStr);
+        }
         StatisticVo statisticVo = objectMapper.readValue(jsonDataStr, StatisticVo.class);
         return ResultVo.success(statisticVo);
     }
@@ -69,6 +70,10 @@ public class ErdController {
     @RequestMapping(value = {"/ncnb/project/page", "/ncnb/project/recent"}, method = {RequestMethod.GET, RequestMethod.POST})
     public ResultVo<PageVo> page() {
         String jsonDataStr = stringRedisTemplate.opsForValue().get(prefix + "page");
+        if (jsonDataStr == null) {
+            jsonDataStr = "{\"records\":[],\"total\":0,\"size\":100,\"current\":1,\"orders\":[],\"searchCount\":true,\"pages\":1}";
+            stringRedisTemplate.opsForValue().set(prefix + "page", jsonDataStr);
+        }
         PageVo pageVo = objectMapper.readValue(jsonDataStr, PageVo.class);
         return ResultVo.success(pageVo);
     }
@@ -99,10 +104,10 @@ public class ErdController {
         pageVo.setTotal(records.size());
         stringRedisTemplate.opsForValue().set(prefix + "page", objectMapper.writeValueAsString(pageVo));
 
-        File file = ResourceUtils.getFile("classpath:template.json");
-        ErdOnlineModel erdOnlineModel = objectMapper.readValue(FileUtils.readFileToString(file), ErdOnlineModel.class);
+        ErdOnlineModel erdOnlineModel = objectMapper.readValue(jsonObjectReq.toJSONString(), ErdOnlineModel.class);
         erdOnlineModel.setId(id);
         erdOnlineModel.setProjectName(recordsVo.getProjectName());
+        erdOnlineModel.setType("1");
         stringRedisTemplate.opsForValue().set(prefix + id, objectMapper.writeValueAsString(erdOnlineModel));
 
         stringRedisTemplate.opsForValue().set(prefix + "load:" + id, "[]");
