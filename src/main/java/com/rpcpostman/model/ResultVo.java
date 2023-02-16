@@ -17,4 +17,8 @@ public class ResultVo<T> {
     public static <T> ResultVo<T> success(T data) {
         return new ResultVo<>(200, "操作成功", data);
     }
+
+    public static <T> ResultVo<T> fail(String msg) {
+        return new ResultVo<>(400, msg, null);
+    }
 }

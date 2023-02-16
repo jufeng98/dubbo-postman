@@ -13,4 +13,5 @@ import java.util.List;
 @Data
 public class ProfileBean {
     private List<DefaultFieldsBean> defaultFields;
+    private List<DbsBean> dbs;
 }

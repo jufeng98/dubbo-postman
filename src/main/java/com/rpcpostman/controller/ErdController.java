@@ -28,7 +28,9 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rpcpostman.model.*;
-import com.rpcpostman.model.erd.ErdOnlineModel;
+import com.rpcpostman.model.erd.*;
+import com.rpcpostman.util.DbUtils;
+import com.rpcpostman.util.ErdUtils;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -43,7 +45,7 @@ import java.util.*;
 @RestController
 @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 public class ErdController {
-    public static final String prefix = "mh-wash:erd:";
+    public static final String PREFIX = "mh-wash:erd:";
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
@@ -51,16 +53,16 @@ public class ErdController {
 
     @RequestMapping(value = "/erd/oauth/token", method = {RequestMethod.GET, RequestMethod.POST})
     public String token() {
-        return stringRedisTemplate.opsForValue().get(prefix + "token");
+        return stringRedisTemplate.opsForValue().get(PREFIX + "token");
     }
 
     @SneakyThrows
     @RequestMapping(value = "/ncnb/project/statistic", method = {RequestMethod.GET, RequestMethod.POST})
     public ResultVo<StatisticVo> statistic() {
-        String jsonDataStr = stringRedisTemplate.opsForValue().get(prefix + "statistic");
+        String jsonDataStr = stringRedisTemplate.opsForValue().get(PREFIX + "statistic");
         if (jsonDataStr == null) {
             jsonDataStr = "{\"yesterday\":7,\"total\":1334,\"month\":48,\"today\":5}";
-            stringRedisTemplate.opsForValue().set(prefix + "statistic", jsonDataStr);
+            stringRedisTemplate.opsForValue().set(PREFIX + "statistic", jsonDataStr);
         }
         StatisticVo statisticVo = objectMapper.readValue(jsonDataStr, StatisticVo.class);
         return ResultVo.success(statisticVo);
@@ -69,10 +71,10 @@ public class ErdController {
     @SneakyThrows
     @RequestMapping(value = {"/ncnb/project/page", "/ncnb/project/recent"}, method = {RequestMethod.GET, RequestMethod.POST})
     public ResultVo<PageVo> page() {
-        String jsonDataStr = stringRedisTemplate.opsForValue().get(prefix + "page");
+        String jsonDataStr = stringRedisTemplate.opsForValue().get(PREFIX + "page");
         if (jsonDataStr == null) {
             jsonDataStr = "{\"records\":[],\"total\":0,\"size\":100,\"current\":1,\"orders\":[],\"searchCount\":true,\"pages\":1}";
-            stringRedisTemplate.opsForValue().set(prefix + "page", jsonDataStr);
+            stringRedisTemplate.opsForValue().set(PREFIX + "page", jsonDataStr);
         }
         PageVo pageVo = objectMapper.readValue(jsonDataStr, PageVo.class);
         return ResultVo.success(pageVo);
@@ -81,7 +83,7 @@ public class ErdController {
     @SneakyThrows
     @RequestMapping(value = "/ncnb/project/info/{id}", method = {RequestMethod.GET, RequestMethod.POST})
     public ResultVo<ErdOnlineModel> info(@PathVariable String id) {
-        String jsonDataStr = stringRedisTemplate.opsForValue().get(prefix + id);
+        String jsonDataStr = stringRedisTemplate.opsForValue().get(PREFIX + id);
         ErdOnlineModel erdOnlineModel = objectMapper.readValue(jsonDataStr, ErdOnlineModel.class);
         return ResultVo.success(erdOnlineModel);
     }
@@ -97,20 +99,20 @@ public class ErdController {
         recordsVo.setTags(jsonObjectReq.getString("tags"));
         recordsVo.setType("1");
 
-        String jsonDataStr = stringRedisTemplate.opsForValue().get(prefix + "page");
+        String jsonDataStr = stringRedisTemplate.opsForValue().get(PREFIX + "page");
         PageVo pageVo = objectMapper.readValue(jsonDataStr, PageVo.class);
         List<RecordsVo> records = Objects.requireNonNull(pageVo).getRecords();
         records.add(recordsVo);
         pageVo.setTotal(records.size());
-        stringRedisTemplate.opsForValue().set(prefix + "page", objectMapper.writeValueAsString(pageVo));
+        stringRedisTemplate.opsForValue().set(PREFIX + "page", objectMapper.writeValueAsString(pageVo));
 
         ErdOnlineModel erdOnlineModel = objectMapper.readValue(jsonObjectReq.toJSONString(), ErdOnlineModel.class);
         erdOnlineModel.setId(id);
         erdOnlineModel.setProjectName(recordsVo.getProjectName());
         erdOnlineModel.setType("1");
-        stringRedisTemplate.opsForValue().set(prefix + id, objectMapper.writeValueAsString(erdOnlineModel));
+        stringRedisTemplate.opsForValue().set(PREFIX + id, objectMapper.writeValueAsString(erdOnlineModel));
 
-        stringRedisTemplate.opsForValue().set(prefix + "load:" + id, "[]");
+        stringRedisTemplate.opsForValue().set(PREFIX + "load:" + id, "[]");
 
         return ResultVo.success("新建项目成功");
     }
@@ -118,7 +120,7 @@ public class ErdController {
     @SneakyThrows
     @RequestMapping(value = "/ncnb/project/update", method = {RequestMethod.GET, RequestMethod.POST})
     public ResultVo<String> update(@RequestBody RecordsVo recordsVoReq) {
-        String jsonDataStr = stringRedisTemplate.opsForValue().get(prefix + "page");
+        String jsonDataStr = stringRedisTemplate.opsForValue().get(PREFIX + "page");
         PageVo pageVo = objectMapper.readValue(jsonDataStr, PageVo.class);
         List<RecordsVo> records = Objects.requireNonNull(pageVo).getRecords();
         for (RecordsVo record : records) {
@@ -129,12 +131,12 @@ public class ErdController {
                 break;
             }
         }
-        stringRedisTemplate.opsForValue().set(prefix + "page", objectMapper.writeValueAsString(pageVo));
+        stringRedisTemplate.opsForValue().set(PREFIX + "page", objectMapper.writeValueAsString(pageVo));
 
-        jsonDataStr = stringRedisTemplate.opsForValue().get(prefix + "" + recordsVoReq.getId());
+        jsonDataStr = stringRedisTemplate.opsForValue().get(PREFIX + "" + recordsVoReq.getId());
         ErdOnlineModel erdOnlineModel = objectMapper.readValue(jsonDataStr, ErdOnlineModel.class);
         Objects.requireNonNull(erdOnlineModel).setProjectName(recordsVoReq.getProjectName());
-        stringRedisTemplate.opsForValue().set(prefix + recordsVoReq.getId(), objectMapper.writeValueAsString(erdOnlineModel));
+        stringRedisTemplate.opsForValue().set(PREFIX + recordsVoReq.getId(), objectMapper.writeValueAsString(erdOnlineModel));
 
         return ResultVo.success("更新项目成功");
     }
@@ -143,7 +145,7 @@ public class ErdController {
     @RequestMapping(value = "/ncnb/project/save", method = {RequestMethod.GET, RequestMethod.POST})
     public ResultVo<Boolean> save(@RequestBody ErdOnlineModel erdOnlineModelReq) {
         String id = erdOnlineModelReq.getId();
-        stringRedisTemplate.opsForValue().set(prefix + id, objectMapper.writeValueAsString(erdOnlineModelReq));
+        stringRedisTemplate.opsForValue().set(PREFIX + id, objectMapper.writeValueAsString(erdOnlineModelReq));
         return ResultVo.success(true);
     }
 
@@ -151,8 +153,36 @@ public class ErdController {
     @RequestMapping(value = "/ncnb/hisProject/load", method = {RequestMethod.GET, RequestMethod.POST})
     public ResultVo<JSONArray> load(@RequestBody JSONObject jsonObjectReq) {
         String projectId = jsonObjectReq.getString("projectId");
-        String jsonStr = stringRedisTemplate.opsForValue().get(prefix + "load:" + projectId);
+        String jsonStr = stringRedisTemplate.opsForValue().get(PREFIX + "load:" + projectId);
         JSONArray jsonArrayData = JSONObject.parseArray(jsonStr);
         return ResultVo.success(jsonArrayData);
     }
+
+    @SneakyThrows
+    @RequestMapping(value = "/ncnb/connector/ping", method = {RequestMethod.GET, RequestMethod.POST})
+    public ResultVo<String> ping(@RequestBody JSONObject jsonObjectReq) {
+        String projectId = jsonObjectReq.getString("projectId");
+        String jsonDataStr = stringRedisTemplate.opsForValue().get(PREFIX + projectId);
+        ErdOnlineModel erdOnlineModel = objectMapper.readValue(jsonDataStr, ErdOnlineModel.class);
+        DbsBean dbsBean = DbUtils.getDefaultDb(erdOnlineModel);
+        Boolean success = DbUtils.checkDb(Objects.requireNonNull(dbsBean));
+        if (success) {
+            return ResultVo.success("连接成功:" + dbsBean.getProperties().getUrl());
+        } else {
+            return ResultVo.fail(dbsBean.getProperties().getUrl());
+        }
+    }
+
+    @SneakyThrows
+    @RequestMapping(value = "/ncnb/project/refreshProjectModule", method = {RequestMethod.GET, RequestMethod.POST})
+    public ResultVo<ModulesBean> refreshProjectModule(@RequestBody JSONObject jsonObjectReq) {
+        String projectId = jsonObjectReq.getString("id");
+        String name = jsonObjectReq.getString("moduleName");
+        String jsonDataStr = stringRedisTemplate.opsForValue().get(PREFIX + projectId);
+        ErdOnlineModel erdOnlineModel = objectMapper.readValue(jsonDataStr, ErdOnlineModel.class);
+        ModulesBean modulesBean = ErdUtils.refreshModule(erdOnlineModel, name);
+        stringRedisTemplate.opsForValue().set(PREFIX + projectId, objectMapper.writeValueAsString(erdOnlineModel));
+        return ResultVo.success(modulesBean);
+    }
+
 }
