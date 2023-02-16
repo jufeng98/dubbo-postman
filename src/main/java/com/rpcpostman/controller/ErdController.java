@@ -26,17 +26,22 @@ package com.rpcpostman.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.*;
 import com.rpcpostman.model.*;
 import com.rpcpostman.model.erd.*;
 import com.rpcpostman.util.DbUtils;
 import com.rpcpostman.util.ErdUtils;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.RandomUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 /**
@@ -185,4 +190,115 @@ public class ErdController {
         return ResultVo.success(modulesBean);
     }
 
+    @SneakyThrows
+    @RequestMapping(value = "/ncnb/queryInfo/tree", method = {RequestMethod.GET, RequestMethod.POST})
+    public ResultVo<List<Tree>> tree(String projectId) {
+        String jsonDataStr = stringRedisTemplate.opsForValue().get(PREFIX + "tree:" + projectId);
+        if (jsonDataStr == null) {
+            jsonDataStr = "[]";
+        }
+        List<Tree> trees = objectMapper.readValue(jsonDataStr, new TypeReference<List<Tree>>() {
+        });
+        return ResultVo.success(trees);
+    }
+
+    @SneakyThrows
+    @RequestMapping(value = "/ncnb/queryInfo", method = {RequestMethod.GET, RequestMethod.POST})
+    public ResultVo<Boolean> queryInfo(@RequestBody JSONObject jsonObjectReq) {
+        String projectId = jsonObjectReq.getString("projectId");
+        Boolean isLeaf = jsonObjectReq.getBoolean("isLeaf");
+        String title = jsonObjectReq.getString("title");
+        Tree tree = new Tree();
+        tree.setId(RandomUtils.nextLong(10000000000L, 99990000000L) + "");
+        tree.setKey(tree.getId());
+        tree.setValue(tree.getId());
+        tree.setTitle(title);
+        tree.setLabel(title);
+        tree.setIsLeaf(isLeaf);
+        List<Tree> trees = tree(projectId).getData();
+        trees.add(tree);
+        stringRedisTemplate.opsForValue().set(PREFIX + "tree:" + projectId, objectMapper.writeValueAsString(trees));
+        stringRedisTemplate.opsForValue().set(PREFIX + "treeNode:" + tree.getId(), objectMapper.writeValueAsString(tree));
+        return ResultVo.success(true);
+    }
+
+    @SneakyThrows
+    @RequestMapping(value = "/ncnb/queryInfo/{treeNodeId}", method = {RequestMethod.GET})
+    public ResultVo<Tree> queryInfo(@PathVariable String treeNodeId) {
+        String jsonStrData = stringRedisTemplate.opsForValue().get(PREFIX + "treeNode:" + treeNodeId);
+        Tree tree = objectMapper.readValue(jsonStrData, Tree.class);
+        return ResultVo.success(tree);
+    }
+
+    @SneakyThrows
+    @RequestMapping(value = "ncnb/queryHistory", method = {RequestMethod.GET})
+    public ResultVo<JSONObject> queryHistory() {
+        JSONObject tableData = new JSONObject();
+        tableData.put("records", Lists.newArrayList());
+        tableData.put("total", 0);
+        return ResultVo.success(tableData);
+    }
+
+    @SneakyThrows
+    @RequestMapping(value = "/ncnb/queryInfo/{treeNodeId}", method = {RequestMethod.PUT})
+    public ResultVo<Tree> queryInfoPut(@RequestBody JSONObject jsonObjectReq, @PathVariable String treeNodeId) {
+        String jsonStrData = stringRedisTemplate.opsForValue().get(PREFIX + "treeNode:" + treeNodeId);
+        Tree tree = objectMapper.readValue(jsonStrData, Tree.class);
+        tree.setSqlInfo(jsonObjectReq.getString("sqlInfo"));
+        stringRedisTemplate.opsForValue().set(PREFIX + "treeNode:" + treeNodeId, objectMapper.writeValueAsString(tree));
+        return ResultVo.success(tree);
+    }
+
+    private static final Map<String, JdbcTemplate> MAP = Maps.newHashMap();
+
+    @SneakyThrows
+    @RequestMapping(value = {"/ncnb/queryInfo/exec", "/ncnb/queryInfo/explain"}, method = {RequestMethod.GET, RequestMethod.POST})
+    public ResultVo<JSONObject> execExplain(@RequestBody JSONObject jsonObjectReq, HttpServletRequest request) {
+        String dbName = jsonObjectReq.getString("dbName");
+        String driverClassName = jsonObjectReq.getString("driverClassName");
+        String key = jsonObjectReq.getString("key");
+        String password = jsonObjectReq.getString("password");
+        String queryId = jsonObjectReq.getString("queryId");
+        String sql = jsonObjectReq.getString("sql");
+        String url = jsonObjectReq.getString("url");
+        String username = jsonObjectReq.getString("username");
+        PropertiesBean propertiesBean = new PropertiesBean();
+        propertiesBean.setDriver_class_name(driverClassName);
+        propertiesBean.setUrl(url);
+        propertiesBean.setPassword(password);
+        propertiesBean.setUsername(username);
+
+        JdbcTemplate jdbcTemplate = MAP.computeIfAbsent(dbName, s -> new JdbcTemplate(DbUtils.basicDataSource(propertiesBean)));
+        sql = sql.replace(";", "");
+        boolean explain = request.getRequestURI().contains("explain");
+        if (explain) {
+            sql = "desc " + sql;
+            List<Map<String, Object>> list = jdbcTemplate.queryForList(sql);
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("columns", list.get(0).keySet());
+            jsonObject.put("tableData", list);
+            return ResultVo.success(jsonObject);
+        }
+
+        int fromIndex = sql.indexOf("from");
+        String countSql = "SELECT count(*) " + sql.substring(fromIndex);
+        Long count = jdbcTemplate.queryForObject(countSql, Long.class);
+        if (!sql.contains("limit") && count >= 500) {
+            sql += " limit 500";
+        }
+        List<Map<String, Object>> list = jdbcTemplate.queryForList(sql);
+        Set<String> columns;
+        if (list.isEmpty()) {
+            columns = Sets.newLinkedHashSet();
+        } else {
+            columns = list.get(0).keySet();
+        }
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("columns", columns);
+        JSONObject tableData = new JSONObject();
+        jsonObject.put("tableData", tableData);
+        tableData.put("records", list);
+        tableData.put("total", count);
+        return ResultVo.success(jsonObject);
+    }
 }
